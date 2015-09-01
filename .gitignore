@@ -1,0 +1,38 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Executables
+*.out
+*.app
+
+/RelationshipVisualization/*.filters 
+/RelationshipVisualization/Debug
+*.tlog
+*.filters 
+*.zip
+*.filters
+*.ilk
+*.pdb
+*.ipch
+/wxwidgets
+*.bkl
+*.dsp
