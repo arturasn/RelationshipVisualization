@@ -33,6 +33,5 @@
 *.ilk
 *.pdb
 *.ipch
-/wxwidgets
 *.bkl
 *.dsp
