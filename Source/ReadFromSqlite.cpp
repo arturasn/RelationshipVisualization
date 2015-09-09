@@ -100,7 +100,7 @@ void ReadSqlite::ReadSqliteStatetements(std::vector<std::pair<CString, CString>>
   
     }
 	sqlite3_finalize(stmt);
-	sql = "SELECT * FROM sqlite_master WHERE type = 'table';";
+	sql = "SELECT * FROM sqlite_master WHERE type = 'table' ORDER BY name ASC;";
 	rc = sqlite3_prepare_v2(sqlitedatabase, sql, -1, &stmt, 0);
 	while(1)
 	{
@@ -110,17 +110,17 @@ void ReadSqlite::ReadSqliteStatetements(std::vector<std::pair<CString, CString>>
 			const unsigned char * text;
 			text  = sqlite3_column_text (stmt, 1);
 			CString Temp(text);
-			if( Temp.Compare(_T("sqlite_sequence") ) )
+			if( Temp.Compare(_T("sqlite_sequence") ) && Temp.Compare(_T("SavedRelationships") ) )
 			{
 			  TableNames.push_back(Temp);
 			  text = sqlite3_column_text (stmt, 4);
 			  CString Temp2(text);
 			  TableNamesSQL.push_back(Temp2);
-			  if( !(Temp.Compare(_T("SavedRelationships"))) )
+			}
+			if( !(Temp.Compare(_T("SavedRelationships"))) )
 			  {
 				  DoRecreatePainting = true;
 			  }
-			}
 
 	    }
 	   else if(s == SQLITE_DONE)

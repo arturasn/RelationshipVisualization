@@ -26,6 +26,7 @@
 
 /RelationshipVisualization/*.filters 
 /RelationshipVisualization/Debug
+/wxwidgets
 *.tlog
 *.filters 
 *.zip
