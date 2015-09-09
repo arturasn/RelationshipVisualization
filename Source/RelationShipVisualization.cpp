@@ -21,6 +21,7 @@ IMPLEMENT_APP(MyApp)
 		EVT_TOOL(Show_Relationships, CustomDialog::OnShowRelations)
 		EVT_TOOL(Show_All_Relationships, CustomDialog::OnShowAllRelations)
 		EVT_TOOL(save_tables, CustomDialog::SaveTables)
+		EVT_TOOL(delete_table, CustomDialog::OnDeleteTable)
 		EVT_LEFT_DCLICK(CustomDialog::OnLeftDoubleClick)
 	wxEND_EVENT_TABLE() 
 
@@ -45,12 +46,14 @@ CustomDialog::CustomDialog(const wxString &title)
 	wxBitmap show_all_relationships_img(wxT("allrelationships.png"), wxBITMAP_TYPE_PNG);
 	wxBitmap open_img(wxT("openicon.png"), wxBITMAP_TYPE_PNG);
 	wxBitmap save_img(wxT("save.png"), wxBITMAP_TYPE_PNG);
+	wxBitmap delete_img(wxT("remove.png"), wxBITMAP_TYPE_PNG);
 
 	wxToolBar *MainToolBar = new wxToolBar(this, wxID_ANY);
     wxSizer *MainSizer = new wxBoxSizer(wxVERTICAL);
 
 	MainToolBar->AddTool(open_file, open_img, wxT("Select File"));
 	MainToolBar->AddTool(Show_Table, show_table_img, wxT("Show Table"));
+	MainToolBar->AddTool(delete_table, delete_img, wxT("Remove Table"));
 	MainToolBar->AddTool(Clear_Layout, show_clear_img, wxT("Clear Layout"));
 	MainToolBar->AddTool(Show_Relationships, show_relationships_img, wxT("Show Direct Relationships"));
 	MainToolBar->AddTool(Show_All_Relationships, show_all_relationships_img, wxT("Show All Relationships"));
@@ -71,14 +74,14 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 	wxBoxSizer *sShowTables = new wxBoxSizer(wxVERTICAL);
 
 	int nTableCount = Get.m_tablenames.size();
-	choices = new wxString[nTableCount];
+	m_pChoices = new wxString[nTableCount];
 	for( int i = 0; i < nTableCount; ++i )
 	{
 		CT2CA pszConvertedAnsiString (Get.m_tablenames[i]);
 	    std::string strStd (pszConvertedAnsiString);
-		choices[i] = wxString::FromUTF8(_strdup(strStd.c_str() ) );
+		m_pChoices[i] = wxString::FromUTF8(_strdup(strStd.c_str() ) );
 	}
-	tables = new wxListBox(dlg, wxID_ANY, wxDefaultPosition, wxSize(150,240), nTableCount, choices);
+	m_pTables = new wxListBox(dlg, wxID_ANY, wxDefaultPosition, wxSize(150,240), nTableCount, m_pChoices);
 	
 	wxButton *addbutton = new wxButton(dlg, add_table, "Add", wxDefaultPosition, wxSize(60,25));
 	wxButton *closebutton = new wxButton(dlg, wxID_CANCEL, "Close", wxDefaultPosition, wxSize(60,25));
@@ -89,7 +92,7 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 	verticalSizer->Add(addbutton, 0, wxLEFT | wxTOP, 5);
 	verticalSizer->Add(closebutton, 0, wxLEFT | wxTOP, 5);
 
-	horizontalSizer->Add(tables, 0, wxLEFT | wxTOP, 5);
+	horizontalSizer->Add(m_pTables, 0, wxLEFT | wxTOP, 5);
 	horizontalSizer->Add(verticalSizer, 0);
 
 	sShowTables->Add(horizontalSizer, 0, wxLEFT | wxTOP, 5);
@@ -99,7 +102,10 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 
 	dlg->ShowModal();
 	dlg->Destroy();
-	delete [] choices;
+	delete [] m_pChoices;
+	delete addbutton;
+	delete closebutton;
+	delete m_pTables;
 }
 void CustomDialog::OnOpenFile( wxCommandEvent &WXUNUSED(event) )
 {
@@ -111,7 +117,7 @@ void CustomDialog::OnOpenFile( wxCommandEvent &WXUNUSED(event) )
 	{
 		TFilePathLine = dialog.GetPath();
 	    const char *Path = TFilePathLine.mb_str();
-		dPath = std::string(Path);
+		m_dPath = std::string(Path);
 		Get.m_deletefirstrelation.clear();
 		Get.m_deletesecondrelation.clear();
 		Get.m_deletetriggernames.clear();
@@ -162,14 +168,14 @@ void CustomDialog::OnOpenFile( wxCommandEvent &WXUNUSED(event) )
 }
 void CustomDialog::OnAddTable( wxCommandEvent &WXUNUSED(event) )
 {
-	if( tables->GetSelection() != wxNOT_FOUND )
+	int selection = m_pTables->GetSelection();
+	if( selection != wxNOT_FOUND )
 	{
-		int selection = tables->GetSelection();
 		int n = ::rand() % 700;
 		int m = ::rand() % 700;
 		Get.m_x.push_back(n);
 		Get.m_y.push_back(m);
-		Get.m_createdtable.push_back(choices[selection]);
+		Get.m_createdtable.push_back(m_pChoices[selection]);
 		unsigned nSize = Get.m_createdtable.size();
 		Get.m_previous_mouse_x.resize(nSize);
 		Get.m_previous_mouse_y.resize(nSize);
@@ -194,6 +200,72 @@ void CustomDialog::OnAddTable( wxCommandEvent &WXUNUSED(event) )
         Refresh(); 
 		Update();
 	}	
+}
+void CustomDialog::OnDeleteTable( wxCommandEvent &WXUNUSED(event) )
+{
+	wxDialog *dlg = new wxDialog(this, wxID_ANY, wxT("Remove Tables"), wxDefaultPosition, wxSize(235,290));
+
+	wxBoxSizer *sShowTables = new wxBoxSizer(wxVERTICAL);
+
+	int nTableCount = Get.m_createdtable.size();
+	 wxString *createdchoices = new wxString[nTableCount];
+	for( int i = 0; i < nTableCount; ++i )
+	{
+		CT2CA pszConvertedAnsiString (Get.m_createdtable[i]);
+	    std::string strStd (pszConvertedAnsiString);
+		createdchoices[i] = wxString::FromUTF8(_strdup(strStd.c_str() ) );
+	}
+	m_pCreatedtableslist = new wxListBox(dlg, wxID_ANY, wxDefaultPosition, wxSize(150,240), nTableCount, createdchoices);
+	
+	wxButton *removebutton = new wxButton(dlg, remove_table, "Remove", wxDefaultPosition, wxSize(60,25));
+	wxButton *closebutton = new wxButton(dlg, wxID_CANCEL, "Close", wxDefaultPosition, wxSize(60,25));
+
+	wxBoxSizer *horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
+	wxBoxSizer *verticalSizer = new wxBoxSizer(wxVERTICAL);
+
+	verticalSizer->Add(removebutton, 0, wxLEFT | wxTOP, 5);
+	verticalSizer->Add(closebutton, 0, wxLEFT | wxTOP, 5);
+
+	horizontalSizer->Add(m_pCreatedtableslist, 0, wxLEFT | wxTOP, 5);
+	horizontalSizer->Add(verticalSizer, 0);
+
+	sShowTables->Add(horizontalSizer, 0, wxLEFT | wxTOP, 5);
+	dlg->SetSizer(sShowTables);
+
+	removebutton->Connect(remove_table, wxEVT_BUTTON, wxCommandEventHandler(CustomDialog::OnRemoveTable), NULL, this);
+
+	dlg->ShowModal();
+	dlg->Destroy();
+	delete [] createdchoices;
+	delete removebutton;
+	delete closebutton;
+	delete m_pCreatedtableslist;
+}
+void CustomDialog::OnRemoveTable( wxCommandEvent &WXUNUSED(event) )
+{
+	if( m_pCreatedtableslist->GetSelection() != wxNOT_FOUND )
+	{
+		int selection = m_pCreatedtableslist->GetSelection();
+		Get.m_createdtable.erase(Get.m_createdtable.begin() + selection );
+		Get.m_createdfields.erase(Get.m_createdfields.begin() + selection);
+		Get.m_x.erase(Get.m_x.begin() + selection );
+		Get.m_y.erase(Get.m_y.begin() + selection );
+		Get.m_height.erase(Get.m_height.begin() + selection );
+		Get.m_width.erase(Get.m_width.begin() + selection );
+		Get.m_previous_mouse_x.erase(Get.m_previous_mouse_x.begin() + selection);
+		Get.m_previous_mouse_y.erase(Get.m_previous_mouse_y.begin() + selection);
+		m_pCreatedtableslist->Clear();
+		int nTableCount = Get.m_createdtable.size();
+		for( int i = 0; i < nTableCount; ++i )
+		{
+			m_pCreatedtableslist->Insert(Get.m_createdtable[i], i);
+		}
+		GetOneAdditionFields();
+		Get.m_SomethingSelected = false;
+		Connect(wxID_ANY, wxEVT_PAINT, wxPaintEventHandler(CustomDialog::OnPaint), NULL, this);
+        Refresh(); 
+		Update();
+	}
 }
 int CustomDialog::GetRectangleWidth(unsigned &nSize, const int &CurMax, const int &selection)
 {	
@@ -1088,21 +1160,21 @@ void CustomDialog::EditRelationShips(wxString &FirstRelationTable, wxString &Fir
 		firstrelationfield.Format(_T("%S"), str4.c_str());
 		if(bUpdateCascade == false &&  UpdateCascade->GetValue() == true)
 		{
-			cExecuteSqlite::ExecuteSqliteStatements(firstrelationtable, secondrelationtable, firstrelationfield, secondrelationfield, dPath.c_str(), 
+			cExecuteSqlite::ExecuteSqliteStatements(firstrelationtable, secondrelationtable, firstrelationfield, secondrelationfield, m_dPath.c_str(), 
 				                                    Get.m_deletefirstrelation, Get.m_deletesecondrelation, Get.m_updatefirstrelation, Get.m_updatesecondrelation, 
 													Get.m_deletetriggernames, Get.m_updatetriggernames, Get.m_foreignkeyfirsttable, Get.m_foreignkeysecondtable, 
 													Get.m_foreignkeyfirstfield, Get.m_foreignkeysecondfield, Get.m_tablenamesSQL, Get.m_tablenames, 1);
 		}
 		if(bDeleteCascade == false &&  DeleteCascade->GetValue() == true)
 		{
-			cExecuteSqlite::ExecuteSqliteStatements(firstrelationtable, secondrelationtable, firstrelationfield, secondrelationfield, dPath.c_str(), 
+			cExecuteSqlite::ExecuteSqliteStatements(firstrelationtable, secondrelationtable, firstrelationfield, secondrelationfield, m_dPath.c_str(), 
 				                                    Get.m_deletefirstrelation, Get.m_deletesecondrelation, Get.m_updatefirstrelation, Get.m_updatesecondrelation, 
 													Get.m_deletetriggernames, Get.m_updatetriggernames, Get.m_foreignkeyfirsttable, Get.m_foreignkeysecondtable, 
 													Get.m_foreignkeyfirstfield, Get.m_foreignkeysecondfield, Get.m_tablenamesSQL, Get.m_tablenames, 2);
 		}
 		if(bReferentialIntegrity == false &&  EnforceReferentialIntegrity->GetValue() == true )
 		{
-			cExecuteSqlite::ExecuteSqliteStatements(firstrelationtable, secondrelationtable, firstrelationfield, secondrelationfield, dPath.c_str(), 
+			cExecuteSqlite::ExecuteSqliteStatements(firstrelationtable, secondrelationtable, firstrelationfield, secondrelationfield, m_dPath.c_str(), 
 				                                    Get.m_deletefirstrelation, Get.m_deletesecondrelation, Get.m_updatefirstrelation, Get.m_updatesecondrelation, 
 													Get.m_deletetriggernames, Get.m_updatetriggernames, Get.m_foreignkeyfirsttable, Get.m_foreignkeysecondtable, 
 													Get.m_foreignkeyfirstfield, Get.m_foreignkeysecondfield, Get.m_tablenamesSQL, Get.m_tablenames, 4);
@@ -1110,21 +1182,21 @@ void CustomDialog::EditRelationShips(wxString &FirstRelationTable, wxString &Fir
 
 		if(bUpdateCascade == true &&  UpdateCascade->GetValue() == false)
 		{
-			cExecuteSqlite::ExecuteSqliteStatements(firstrelationtable, secondrelationtable, firstrelationfield, secondrelationfield, dPath.c_str(), 
+			cExecuteSqlite::ExecuteSqliteStatements(firstrelationtable, secondrelationtable, firstrelationfield, secondrelationfield, m_dPath.c_str(), 
 				                                    Get.m_deletefirstrelation, Get.m_deletesecondrelation, Get.m_updatefirstrelation, Get.m_updatesecondrelation, 
 													Get.m_deletetriggernames, Get.m_updatetriggernames, Get.m_foreignkeyfirsttable, Get.m_foreignkeysecondtable, 
 													Get.m_foreignkeyfirstfield, Get.m_foreignkeysecondfield, Get.m_tablenamesSQL, Get.m_tablenames, 8);
 		}
 		if(bDeleteCascade == true &&  DeleteCascade->GetValue() == false)
 		{
-			cExecuteSqlite::ExecuteSqliteStatements(firstrelationtable, secondrelationtable, firstrelationfield, secondrelationfield, dPath.c_str(), 
+			cExecuteSqlite::ExecuteSqliteStatements(firstrelationtable, secondrelationtable, firstrelationfield, secondrelationfield, m_dPath.c_str(), 
 				                                    Get.m_deletefirstrelation, Get.m_deletesecondrelation, Get.m_updatefirstrelation, Get.m_updatesecondrelation, 
 													Get.m_deletetriggernames, Get.m_updatetriggernames, Get.m_foreignkeyfirsttable, Get.m_foreignkeysecondtable, 
 													Get.m_foreignkeyfirstfield, Get.m_foreignkeysecondfield, Get.m_tablenamesSQL, Get.m_tablenames, 16);
 		}
 		if(bReferentialIntegrity == true &&  EnforceReferentialIntegrity->GetValue() == false )
 		{
-			cExecuteSqlite::ExecuteSqliteStatements(firstrelationtable, secondrelationtable, firstrelationfield, secondrelationfield, dPath.c_str(), 
+			cExecuteSqlite::ExecuteSqliteStatements(firstrelationtable, secondrelationtable, firstrelationfield, secondrelationfield, m_dPath.c_str(), 
 				                                    Get.m_deletefirstrelation, Get.m_deletesecondrelation, Get.m_updatefirstrelation, Get.m_updatesecondrelation, 
 													Get.m_deletetriggernames, Get.m_updatetriggernames, Get.m_foreignkeyfirsttable, Get.m_foreignkeysecondtable, 
 													Get.m_foreignkeyfirstfield, Get.m_foreignkeysecondfield, Get.m_tablenamesSQL, Get.m_tablenames, 32);
@@ -1148,7 +1220,7 @@ void CustomDialog::EditRelationShips(wxString &FirstRelationTable, wxString &Fir
 }
 void CustomDialog::SaveTables(wxCommandEvent &WXUNUSED(event))
 {
-	cExecuteSqlite::SaveCurrentDrawing(Get.m_createdtable, Get.m_height, Get.m_width, Get.m_x, Get.m_y, dPath.c_str());
+	cExecuteSqlite::SaveCurrentDrawing(Get.m_createdtable, Get.m_height, Get.m_width, Get.m_x, Get.m_y, m_dPath.c_str());
 }
 void CustomDialog::GetOneAdditionFields()
 {

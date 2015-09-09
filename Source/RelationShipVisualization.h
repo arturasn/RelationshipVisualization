@@ -5,11 +5,12 @@
 class CustomDialog : public wxFrame
 {
 public:
-	 std::string dPath;
+	 std::string m_dPath;
 	 RelationshipsInfo Get;
 	 CustomDialog(const wxString& title);
-	 wxListBox *tables;
-	 wxString *choices;
+	 wxListBox *m_pTables;
+	 wxListBox *m_pCreatedtableslist;
+	 wxString *m_pChoices;
 	 void SaveTables(wxCommandEvent &WXUNUSED(event) );
 	 void OnEraseBackGround(wxEraseEvent &WXUNUSED(event));
 	 void PaintBackground(wxDC &dc);
@@ -18,6 +19,8 @@ private:
 	 void OnShowTables( wxCommandEvent &WXUNUSED(event) );
 	 void OnOpenFile( wxCommandEvent &WXUNUSED(event) );
 	 void OnAddTable( wxCommandEvent &WXUNUSED(event) );
+	 void OnRemoveTable( wxCommandEvent &WXUNUSED(event) );
+	 void OnDeleteTable( wxCommandEvent &WXUNUSED(event) );
 	 void OnClear (wxCommandEvent &WXUNUSED(event) );
 	 void OnLeftMouseDown( wxMouseEvent &event );
 	 void OnLeftMouseReleased(wxMouseEvent &event);
@@ -56,7 +59,9 @@ enum
 	Show_All_Relationships,
 	open_file,
 	add_table,
-	save_tables
+	save_tables,
+	delete_table,
+	remove_table
 };
 
 DECLARE_APP(MyApp)
