@@ -81,7 +81,7 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 	    std::string strStd (pszConvertedAnsiString);
 		m_pChoices[i] = wxString::FromUTF8(_strdup(strStd.c_str() ) );
 	}
-	m_pTables = new wxListBox(dlg, wxID_ANY, wxDefaultPosition, wxSize(150,240), nTableCount, m_pChoices);
+	m_pTables = new wxListBox(dlg, wxID_ANY, wxDefaultPosition, wxSize(150,240), nTableCount, m_pChoices, wxLB_HSCROLL);
 	
 	wxButton *addbutton = new wxButton(dlg, add_table, "Add", wxDefaultPosition, wxSize(60,25));
 	wxButton *closebutton = new wxButton(dlg, wxID_CANCEL, "Close", wxDefaultPosition, wxSize(60,25));
