@@ -47,6 +47,7 @@
     <ClInclude Include="..\Source\ReadFromSqlite.h" />
     <ClInclude Include="..\Source\RelationshipInfo.h" />
     <ClInclude Include="..\Source\RelationShipVisualization.h" />
+    <ClInclude Include="..\Source\SimpleIni.h" />
     <ClInclude Include="..\Source\sqlite3.h" />
     <ClInclude Include="..\Source\stdafx.h" />
   </ItemGroup>

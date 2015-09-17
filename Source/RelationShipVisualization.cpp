@@ -6,6 +6,8 @@
 #include <wx/dcbuffer.h>
 #include "RelationshipInfo.h"
 #include "ExecuteSqlite.h"
+#include <fstream>
+#include "SimpleIni.h"
 #include "RelationShipVisualization.h"
 #include "ReadFromSqlite.h"
 
@@ -69,8 +71,14 @@ CustomDialog::CustomDialog(const wxString &title)
 }
 void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event)) 
 {
-	wxDialog *dlg = new wxDialog(this, wxID_ANY, wxT("Show Tables"), wxDefaultPosition, wxSize(235,290));
+	int *sizex = new int, 
+		*sizey = new int,
+		*posx = new int,
+		*posy = new int;
+	GetWindowInformation(*sizex,*sizey, *posx, *posy);
+	wxDialog *dlg = new wxDialog(this, wxID_ANY, wxT("Show Tables"), wxPoint(*posx,*posy), wxSize(*sizex,*sizey), wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
 
+	
 	wxBoxSizer *sShowTables = new wxBoxSizer(wxVERTICAL);
 
 	int nTableCount = Get.m_tablenames.size();
@@ -81,7 +89,7 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 	    std::string strStd (pszConvertedAnsiString);
 		m_pChoices[i] = wxString::FromUTF8(_strdup(strStd.c_str() ) );
 	}
-	m_pTables = new wxListBox(dlg, wxID_ANY, wxDefaultPosition, wxSize(150,240), nTableCount, m_pChoices, wxLB_HSCROLL);
+	m_pTables = new wxListBox(dlg, wxID_ANY, wxDefaultPosition, wxSize(150,240), nTableCount, m_pChoices);
 	
 	wxButton *addbutton = new wxButton(dlg, add_table, "Add", wxDefaultPosition, wxSize(60,25));
 	wxButton *closebutton = new wxButton(dlg, wxID_CANCEL, "Close", wxDefaultPosition, wxSize(60,25));
@@ -89,19 +97,28 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 	wxBoxSizer *horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer *verticalSizer = new wxBoxSizer(wxVERTICAL);
 
-	verticalSizer->Add(addbutton, 0, wxLEFT | wxTOP, 5);
-	verticalSizer->Add(closebutton, 0, wxLEFT | wxTOP, 5);
+	verticalSizer->Add(addbutton, 0, wxTOP, 5);
+	verticalSizer->Add(closebutton, 0, wxTOP, 5);
 
-	horizontalSizer->Add(m_pTables, 0, wxLEFT | wxTOP, 5);
-	horizontalSizer->Add(verticalSizer, 0);
+	horizontalSizer->Add(m_pTables, 1, wxEXPAND | wxALL, 5);
+	horizontalSizer->Add(verticalSizer, 0, wxALIGN_RIGHT | wxRIGHT , 5);
 
-	sShowTables->Add(horizontalSizer, 0, wxLEFT | wxTOP, 5);
+	sShowTables->Add(horizontalSizer, 1, wxLEFT | wxTOP | wxEXPAND, 5);
 	dlg->SetSizer(sShowTables);
 
 	addbutton->Connect(add_table, wxEVT_BUTTON, wxCommandEventHandler(CustomDialog::OnAddTable), NULL, this);
 
-	dlg->ShowModal();
+	if( dlg->ShowModal() == wxID_CANCEL)
+	{
+		dlg->GetSize(sizex,sizey);
+		dlg->GetPosition(posx,posy);
+		SaveWindowInformation(*sizex,*sizey, *posx, *posy);
+	}
 	dlg->Destroy();
+	delete sizex;
+	delete sizey;
+	delete posx;
+	delete posy;
 	delete [] m_pChoices;
 	delete addbutton;
 	delete closebutton;
@@ -1262,4 +1279,25 @@ void CustomDialog::GetOneAdditionFields()
 			Get.m_oneaddition[i].push_back(isPrimary);
 		}
 	}
+}
+void CustomDialog::SaveWindowInformation(int &sizex, int &sizey, int &posx, int &posy)
+{
+	std::ofstream WindowPositionFile("WindowInformation.ini");
+	WindowPositionFile << "[WindowSize]" << std::endl;
+	WindowPositionFile << "x = " << sizex << std::endl;
+	WindowPositionFile << "y = " << sizey << std::endl;
+	WindowPositionFile << "[WindowPosition]" << std::endl;
+	WindowPositionFile << "x_coord = " << posx << std::endl;
+	WindowPositionFile << "y_coord = " << posy << std::endl;
+	WindowPositionFile.close();
+}
+void CustomDialog::GetWindowInformation(int &sizex, int &sizey, int &posx, int &posy)
+{
+	CSimpleIni ini;
+    ini.SetUnicode();
+    ini.LoadFile("WindowInformation.ini");
+	sizex = ini.GetLongValue(_T("WindowSize"), _T("x"), 235);
+	sizey = ini.GetLongValue(_T("WindowSize"), _T("y"), 290);
+	posx = ini.GetLongValue(_T("WindowPosition"), _T("x_coord"), 200);
+	posy = ini.GetLongValue(_T("WindowPosition"), _T("y_coord"), 200);
 }

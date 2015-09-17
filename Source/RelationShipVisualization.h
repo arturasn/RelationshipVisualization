@@ -15,8 +15,10 @@ public:
 	 void OnEraseBackGround(wxEraseEvent &WXUNUSED(event));
 	 void PaintBackground(wxDC &dc);
 	 int GetRectangleWidth(unsigned &nSize, const int &CurMax, const int &selection);
+	 static void SaveWindowInformation(int &sizex, int &sizey, int &posx, int &posy);
+	 static void GetWindowInformation(int &sizex, int &sizey, int &posx, int &posy);
 private:
-	 void OnShowTables( wxCommandEvent &WXUNUSED(event) );
+	 void OnShowTables(  wxCommandEvent &WXUNUSED(event) );
 	 void OnOpenFile( wxCommandEvent &WXUNUSED(event) );
 	 void OnAddTable( wxCommandEvent &WXUNUSED(event) );
 	 void OnRemoveTable( wxCommandEvent &WXUNUSED(event) );
@@ -44,7 +46,6 @@ private:
 	 double Triangle(double a, double b, double c);
 	 wxDECLARE_EVENT_TABLE();
 };
-
 
 class MyApp : public wxApp
 {
