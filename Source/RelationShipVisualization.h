@@ -12,12 +12,12 @@ public:
 	 wxListBox *m_pCreatedtableslist;
 	 wxString *m_pChoices;
 	 void SaveTables(wxCommandEvent &WXUNUSED(event) );
-	 void OnEraseBackGround(wxEraseEvent &WXUNUSED(event));
 	 void PaintBackground(wxDC &dc);
 	 int GetRectangleWidth(unsigned &nSize, const int &CurMax, const int &selection);
 	 static void SaveWindowInformation(int &sizex, int &sizey, int &posx, int &posy);
 	 static void GetWindowInformation(int &sizex, int &sizey, int &posx, int &posy);
 private:
+	 void OnEraseBackGround(wxEraseEvent &WXUNUSED(event));
 	 void OnShowTables(  wxCommandEvent &WXUNUSED(event) );
 	 void OnOpenFile( wxCommandEvent &WXUNUSED(event) );
 	 void OnAddTable( wxCommandEvent &WXUNUSED(event) );

@@ -25,11 +25,12 @@ IMPLEMENT_APP(MyApp)
 		EVT_TOOL(save_tables, CustomDialog::SaveTables)
 		EVT_TOOL(delete_table, CustomDialog::OnDeleteTable)
 		EVT_LEFT_DCLICK(CustomDialog::OnLeftDoubleClick)
+		EVT_PAINT(CustomDialog::OnPaint)
 	wxEND_EVENT_TABLE() 
 
 bool MyApp::OnInit()
 {
-    CustomDialog *custom = new CustomDialog(wxT("Relationship Visualization"));
+	CustomDialog *custom = new CustomDialog(wxT("Relationship Visualization"));
     custom->Show(true);
     return true;
 }
@@ -76,9 +77,8 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 		*posx = new int,
 		*posy = new int;
 	GetWindowInformation(*sizex,*sizey, *posx, *posy);
-	wxDialog *dlg = new wxDialog(this, wxID_ANY, wxT("Show Tables"), wxPoint(*posx,*posy), wxSize(*sizex,*sizey), wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
+	wxDialog *dlg = new wxDialog(NULL, wxID_ANY, wxT("Show Tables"), wxPoint(*posx,*posy), wxSize(*sizex,*sizey), wxCAPTION|wxCLOSE_BOX|wxRESIZE_BORDER);
 
-	
 	wxBoxSizer *sShowTables = new wxBoxSizer(wxVERTICAL);
 
 	int nTableCount = Get.m_tablenames.size();
@@ -170,7 +170,6 @@ void CustomDialog::OnOpenFile( wxCommandEvent &WXUNUSED(event) )
 	    Get.m_previous_mouse_y.resize(nSize);
 		GetOneAdditionFields();
 		//GetRelationLines();
-		Connect(wxID_ANY, wxEVT_PAINT, wxPaintEventHandler(CustomDialog::OnPaint), NULL, this);
         Refresh(); 
 		Update();
 
@@ -213,7 +212,6 @@ void CustomDialog::OnAddTable( wxCommandEvent &WXUNUSED(event) )
 		}
 		GetOneAdditionFields();
 		//GetRelationLines();
-		Connect(wxID_ANY, wxEVT_PAINT, wxPaintEventHandler(CustomDialog::OnPaint), NULL, this);
         Refresh(); 
 		Update();
 	}	
@@ -279,7 +277,6 @@ void CustomDialog::OnRemoveTable( wxCommandEvent &WXUNUSED(event) )
 		}
 		GetOneAdditionFields();
 		Get.m_SomethingSelected = false;
-		Connect(wxID_ANY, wxEVT_PAINT, wxPaintEventHandler(CustomDialog::OnPaint), NULL, this);
         Refresh(); 
 		Update();
 	}
@@ -308,7 +305,6 @@ void CustomDialog::OnClear (wxCommandEvent &WXUNUSED( event)  )
 	Get.m_y.clear();
 	Get.m_width.clear();
 	//Get.m_Drawnlines.clear();
-	Connect(wxID_ANY, wxEVT_PAINT, wxPaintEventHandler(CustomDialog::OnPaint), NULL, this);
 	Refresh();
 	Update();
 }
@@ -393,7 +389,6 @@ void CustomDialog::OnLeftMouseReleased(wxMouseEvent &event)
 		}
 	}
 	Get.m_field_dragging = false;
-	Disconnect(wxID_ANY, wxEVT_PAINT, wxPaintEventHandler(CustomDialog::OnPaint), NULL, this);
 }
 void CustomDialog::OnMouseMoved(wxMouseEvent& event)
 {
@@ -409,7 +404,6 @@ void CustomDialog::OnMouseMoved(wxMouseEvent& event)
  
         Get.m_previous_mouse_x[Get.m_rect_index] = event.GetPosition().x;
         Get.m_previous_mouse_y[Get.m_rect_index] = event.GetPosition().y;
-		Connect(wxID_ANY, wxEVT_PAINT, wxPaintEventHandler(CustomDialog::OnPaint), NULL, this);
         Refresh(); 
 		Update();
     }
@@ -437,9 +431,9 @@ void CustomDialog::OnMouseLeftWindow(wxMouseEvent &WXUNUSED(event))
 void CustomDialog::OnPaint(wxPaintEvent &WXUNUSED (event))
 { 
 	wxBufferedPaintDC dc(this);
+	Connect(wxID_ANY, wxEVT_ERASE_BACKGROUND, wxEraseEventHandler(CustomDialog::OnEraseBackGround), NULL, this);
 	PrepareDC(dc);
 	PaintBackground(dc);
-	Connect(wxID_ANY, wxEVT_ERASE_BACKGROUND, wxEraseEventHandler(CustomDialog::OnEraseBackGround), NULL, this);
 	Get.m_linebottomleft.clear();
 	Get.m_linebottomright.clear();
 	Get.m_linetopright.clear();
@@ -728,7 +722,6 @@ void CustomDialog::OnShowRelations(wxCommandEvent &WXUNUSED (event) )
 	Get.m_previous_mouse_y.resize(nSize);
 	GetOneAdditionFields();
 	//GetRelationLines();
-	Connect(wxID_ANY, wxEVT_PAINT, wxPaintEventHandler(CustomDialog::OnPaint), NULL, this);
     Refresh(); 
 	Update();
 }
@@ -975,7 +968,6 @@ void CustomDialog::OnShowAllRelations(wxCommandEvent &WXUNUSED(event) )
 	Get.m_previous_mouse_x.resize(nSize);
 	Get.m_previous_mouse_y.resize(nSize);
 	GetOneAdditionFields();
-	Connect(wxID_ANY, wxEVT_PAINT, wxPaintEventHandler(CustomDialog::OnPaint), NULL, this);
     Refresh(); 
 	Update();
 }
@@ -1231,7 +1223,6 @@ void CustomDialog::EditRelationShips(wxString &FirstRelationTable, wxString &Fir
 	delete PrimaryKeySecondField;
 	GetOneAdditionFields();
 	//GetRelationLines();
-	Connect(wxID_ANY, wxEVT_PAINT, wxPaintEventHandler(CustomDialog::OnPaint), NULL, this);
 	Refresh(); 
 	Update();
 }
