@@ -76,20 +76,27 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 		*sizey = new int,
 		*posx = new int,
 		*posy = new int;
-	GetWindowInformation(*sizex,*sizey, *posx, *posy);
+	GetWindowInformationAddTable(*sizex,*sizey, *posx, *posy);
 	wxDialog *dlg = new wxDialog(NULL, wxID_ANY, wxT("Show Tables"), wxPoint(*posx,*posy), wxSize(*sizex,*sizey), wxCAPTION|wxCLOSE_BOX|wxRESIZE_BORDER);
 
 	wxBoxSizer *sShowTables = new wxBoxSizer(wxVERTICAL);
 
 	int nTableCount = Get.m_tablenames.size();
-	m_pChoices = new wxString[nTableCount];
+	//m_pChoices = new wxString[nTableCount];
+	int ind = -1;
+	m_pChoices.Clear();
 	for( int i = 0; i < nTableCount; ++i )
 	{
+		if( GetCreatedTableIndex(CstringToWxString(Get.m_tablenames[i])) != -1){	
+			continue;
+		}
+		ind++;
 		CT2CA pszConvertedAnsiString (Get.m_tablenames[i]);
 	    std::string strStd (pszConvertedAnsiString);
-		m_pChoices[i] = wxString::FromUTF8(_strdup(strStd.c_str() ) );
+		m_pChoices.Insert(wxString::FromUTF8(_strdup(strStd.c_str() ) ), ind); 
+		//m_pChoices[i] = wxString::FromUTF8(_strdup(strStd.c_str() ) );
 	}
-	m_pTables = new wxListBox(dlg, wxID_ANY, wxDefaultPosition, wxSize(150,240), nTableCount, m_pChoices);
+	m_pTables = new wxListBox(dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_pChoices);
 	
 	wxButton *addbutton = new wxButton(dlg, add_table, "Add", wxDefaultPosition, wxSize(60,25));
 	wxButton *closebutton = new wxButton(dlg, wxID_CANCEL, "Close", wxDefaultPosition, wxSize(60,25));
@@ -112,14 +119,13 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 	{
 		dlg->GetSize(sizex,sizey);
 		dlg->GetPosition(posx,posy);
-		SaveWindowInformation(*sizex,*sizey, *posx, *posy);
+		SaveWindowInformationAddTable(*sizex,*sizey, *posx, *posy);
 	}
 	dlg->Destroy();
 	delete sizex;
 	delete sizey;
 	delete posx;
 	delete posy;
-	delete [] m_pChoices;
 	delete addbutton;
 	delete closebutton;
 	delete m_pTables;
@@ -218,7 +224,12 @@ void CustomDialog::OnAddTable( wxCommandEvent &WXUNUSED(event) )
 }
 void CustomDialog::OnDeleteTable( wxCommandEvent &WXUNUSED(event) )
 {
-	wxDialog *dlg = new wxDialog(this, wxID_ANY, wxT("Remove Tables"), wxDefaultPosition, wxSize(235,290));
+	int *sizex = new int, 
+		*sizey = new int,
+		*posx = new int,
+		*posy = new int;
+	GetWindowInformationRemTable(*sizex,*sizey, *posx, *posy);
+	wxDialog *dlg = new wxDialog(this, wxID_ANY, wxT("Remove Tables"), wxPoint(*posx,*posy), wxSize(*sizex,*sizey), wxCAPTION|wxCLOSE_BOX|wxRESIZE_BORDER);
 
 	wxBoxSizer *sShowTables = new wxBoxSizer(wxVERTICAL);
 
@@ -230,7 +241,7 @@ void CustomDialog::OnDeleteTable( wxCommandEvent &WXUNUSED(event) )
 	    std::string strStd (pszConvertedAnsiString);
 		createdchoices[i] = wxString::FromUTF8(_strdup(strStd.c_str() ) );
 	}
-	m_pCreatedtableslist = new wxListBox(dlg, wxID_ANY, wxDefaultPosition, wxSize(150,240), nTableCount, createdchoices);
+	m_pCreatedtableslist = new wxListBox(dlg, wxID_ANY, wxDefaultPosition, wxSize(150,240), nTableCount, createdchoices, wxLB_SORT);
 	
 	wxButton *removebutton = new wxButton(dlg, remove_table, "Remove", wxDefaultPosition, wxSize(60,25));
 	wxButton *closebutton = new wxButton(dlg, wxID_CANCEL, "Close", wxDefaultPosition, wxSize(60,25));
@@ -238,20 +249,29 @@ void CustomDialog::OnDeleteTable( wxCommandEvent &WXUNUSED(event) )
 	wxBoxSizer *horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer *verticalSizer = new wxBoxSizer(wxVERTICAL);
 
-	verticalSizer->Add(removebutton, 0, wxLEFT | wxTOP, 5);
-	verticalSizer->Add(closebutton, 0, wxLEFT | wxTOP, 5);
+	verticalSizer->Add(removebutton, 0, wxLEFT|wxTOP|wxRIGHT|wxEXPAND, 5);
+	verticalSizer->Add(closebutton, 0, wxLEFT|wxTOP|wxRIGHT|wxEXPAND, 5);
 
-	horizontalSizer->Add(m_pCreatedtableslist, 0, wxLEFT | wxTOP, 5);
+	horizontalSizer->Add(m_pCreatedtableslist, 1, wxLEFT|wxTOP|wxEXPAND, 5);
 	horizontalSizer->Add(verticalSizer, 0);
 
-	sShowTables->Add(horizontalSizer, 0, wxLEFT | wxTOP, 5);
+	sShowTables->Add(horizontalSizer, 1, wxLEFT|wxTOP|wxEXPAND, 5);
 	dlg->SetSizer(sShowTables);
 
 	removebutton->Connect(remove_table, wxEVT_BUTTON, wxCommandEventHandler(CustomDialog::OnRemoveTable), NULL, this);
 
-	dlg->ShowModal();
+	if ( dlg->ShowModal() == wxID_CANCEL )
+	{
+		dlg->GetSize(sizex,sizey);
+		dlg->GetPosition(posx,posy);
+		SaveWindowInformationRemTable(*sizex,*sizey, *posx, *posy);
+	}
 	dlg->Destroy();
 	delete [] createdchoices;
+	delete posx;
+	delete posy;
+	delete sizex;
+	delete sizey;
 	delete removebutton;
 	delete closebutton;
 	delete m_pCreatedtableslist;
@@ -260,7 +280,7 @@ void CustomDialog::OnRemoveTable( wxCommandEvent &WXUNUSED(event) )
 {
 	if( m_pCreatedtableslist->GetSelection() != wxNOT_FOUND )
 	{
-		int selection = m_pCreatedtableslist->GetSelection();
+		int selection = GetCreatedTableIndex(m_pCreatedtableslist->GetString(m_pCreatedtableslist->GetSelection()));
 		Get.m_createdtable.erase(Get.m_createdtable.begin() + selection );
 		Get.m_createdfields.erase(Get.m_createdfields.begin() + selection);
 		Get.m_x.erase(Get.m_x.begin() + selection );
@@ -841,6 +861,16 @@ int CustomDialog::GetIndex(CString sSearch)
 			return i3;
 	}
 }
+int CustomDialog::GetCreatedTableIndex(wxString sSearch)
+{
+	unsigned nSize = Get.m_createdtable.size();
+	for(unsigned i = 0; i < nSize; ++i)
+	{
+		if( sSearch == Get.m_createdtable[i] )
+			return i;
+	}
+	return -1;
+}
 bool CustomDialog::isCreated(CString &sSearch)
 {
 	unsigned nSize = Get.m_createdtable.size();
@@ -1271,9 +1301,9 @@ void CustomDialog::GetOneAdditionFields()
 		}
 	}
 }
-void CustomDialog::SaveWindowInformation(int &sizex, int &sizey, int &posx, int &posy)
+void CustomDialog::SaveWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy)
 {
-	std::ofstream WindowPositionFile("WindowInformation.ini");
+	std::ofstream WindowPositionFile("WindowInformationAddTable.ini");
 	WindowPositionFile << "[WindowSize]" << std::endl;
 	WindowPositionFile << "x = " << sizex << std::endl;
 	WindowPositionFile << "y = " << sizey << std::endl;
@@ -1282,11 +1312,33 @@ void CustomDialog::SaveWindowInformation(int &sizex, int &sizey, int &posx, int 
 	WindowPositionFile << "y_coord = " << posy << std::endl;
 	WindowPositionFile.close();
 }
-void CustomDialog::GetWindowInformation(int &sizex, int &sizey, int &posx, int &posy)
+void CustomDialog::GetWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy)
 {
 	CSimpleIni ini;
     ini.SetUnicode();
-    ini.LoadFile("WindowInformation.ini");
+    ini.LoadFile("WindowInformationAddTable.ini");
+	sizex = ini.GetLongValue(_T("WindowSize"), _T("x"), 235);
+	sizey = ini.GetLongValue(_T("WindowSize"), _T("y"), 290);
+	posx = ini.GetLongValue(_T("WindowPosition"), _T("x_coord"), 200);
+	posy = ini.GetLongValue(_T("WindowPosition"), _T("y_coord"), 200);
+}
+
+void CustomDialog::SaveWindowInformationRemTable(int &sizex, int &sizey, int &posx, int &posy)
+{
+	std::ofstream WindowPositionFile("WindowInformationRemTable.ini");
+	WindowPositionFile << "[WindowSize]" << std::endl;
+	WindowPositionFile << "x = " << sizex << std::endl;
+	WindowPositionFile << "y = " << sizey << std::endl;
+	WindowPositionFile << "[WindowPosition]" << std::endl;
+	WindowPositionFile << "x_coord = " << posx << std::endl;
+	WindowPositionFile << "y_coord = " << posy << std::endl;
+	WindowPositionFile.close();
+}
+void CustomDialog::GetWindowInformationRemTable(int &sizex, int &sizey, int &posx, int &posy)
+{
+	CSimpleIni ini;
+    ini.SetUnicode();
+    ini.LoadFile("WindowInformationRemTable.ini");
 	sizex = ini.GetLongValue(_T("WindowSize"), _T("x"), 235);
 	sizey = ini.GetLongValue(_T("WindowSize"), _T("y"), 290);
 	posx = ini.GetLongValue(_T("WindowPosition"), _T("x_coord"), 200);

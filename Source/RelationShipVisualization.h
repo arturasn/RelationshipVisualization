@@ -10,12 +10,14 @@ public:
 	 CustomDialog(const wxString& title);
 	 wxListBox *m_pTables;
 	 wxListBox *m_pCreatedtableslist;
-	 wxString *m_pChoices;
+	 wxArrayString m_pChoices;
 	 void SaveTables(wxCommandEvent &WXUNUSED(event) );
 	 void PaintBackground(wxDC &dc);
 	 int GetRectangleWidth(unsigned &nSize, const int &CurMax, const int &selection);
-	 static void SaveWindowInformation(int &sizex, int &sizey, int &posx, int &posy);
-	 static void GetWindowInformation(int &sizex, int &sizey, int &posx, int &posy);
+	 static void SaveWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy);
+	 static void GetWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy);
+	 static void GetWindowInformationRemTable(int &sizex, int &sizey, int &posx, int &posy);
+	 static void SaveWindowInformationRemTable(int &sizex, int &sizey, int &posx, int &posy);
 private:
 	 void OnEraseBackGround(wxEraseEvent &WXUNUSED(event));
 	 void OnShowTables(  wxCommandEvent &WXUNUSED(event) );
@@ -41,6 +43,7 @@ private:
 	 wxString CstringToWxString(CString &String4Conversion);
 	 void GetOneAdditionFields();
 	 int GetIndex(CString sSearch);
+	 int GetCreatedTableIndex(wxString sSearch);
 	 bool isCreated(CString &sSearch);
 	 wxString RelationshipView(int &FirstTableIndex, int &SecondTableIndex, int &RelationshipIndex, int &RelationFlag);
 	 double Triangle(double a, double b, double c);
