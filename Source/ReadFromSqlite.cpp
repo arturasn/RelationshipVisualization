@@ -18,7 +18,7 @@ void ReadSqlite::ReadSqliteStatetements(std::vector<std::pair<CString, CString>>
 									   std::vector<CString> &ForeignKeyFirstField, std::vector<CString> &ForeignKeySecondField, std::vector< std::vector <CString> > &FieldNames,
 									   std::vector<CString> &TableNames, std::vector<CString> &PrimaryKeyFields, std::vector<CString> &deletetriggernames, std::vector<CString> &updatetriggernames,
 									   std::vector<CString> &TableNamesSQL, std::vector<CString> &uniquefields, std::vector<wxString> &createdtable, std::vector<int> &x, 
-									   std::vector<int> &y, std::vector<int> &width, std::vector<int> &height, std::vector< std::vector<wxString> > &createdfields, const char *Path)
+									   std::vector<int> &y, std::vector< std::vector<wxString> > &createdfields, const char *Path)
 {
 	sqlite3 *sqlitedatabase;
 	int rc = sqlite3_open(Path, &sqlitedatabase);
@@ -265,11 +265,11 @@ void ReadSqlite::ReadSqliteStatetements(std::vector<std::pair<CString, CString>>
 		sqlite3_finalize(stmt);
 	}
 	if( DoRecreatePainting )
-		GetRepaintValues(createdtable, x, y, width, height, createdfields, TableNames, FieldNames, Path);
+		GetRepaintValues(createdtable, x, y, createdfields, TableNames, FieldNames, Path);
 	sqlite3_close(sqlitedatabase);
 }
-void ReadSqlite::GetRepaintValues(std::vector<wxString> &createdtable, std::vector<int> &x, std::vector<int> &y, std::vector<int> &width, std::vector<int> &height, 
-		                         std::vector< std::vector<wxString> > &createdfields, std::vector<CString> &TableNames, std::vector< std::vector <CString> > &FieldNames,
+void ReadSqlite::GetRepaintValues(std::vector<wxString> &createdtable, std::vector<int> &x, std::vector<int> &y, std::vector< std::vector<wxString> > &createdfields, 
+								  std::vector<CString> &TableNames, std::vector< std::vector <CString> > &FieldNames,
 								 const char *Path)
 {
 	sqlite3 *sqlitedatabase;
@@ -293,12 +293,6 @@ void ReadSqlite::GetRepaintValues(std::vector<wxString> &createdtable, std::vect
 			text = sqlite3_column_text(stmt, 2);
 			wxString Temp3(text);
 			y.push_back(wxAtoi(Temp3));
-			text = sqlite3_column_text(stmt, 3);
-			wxString Temp4(text);
-			width.push_back(wxAtoi(Temp4));
-			text = sqlite3_column_text(stmt, 4);
-			wxString Temp5(text);
-			height.push_back(wxAtoi(Temp5));
 		}
 		else if(s == SQLITE_DONE)
 		{
@@ -307,7 +301,6 @@ void ReadSqlite::GetRepaintValues(std::vector<wxString> &createdtable, std::vect
 		else exit(1);
 	}
 	sqlite3_finalize(stmt);
-	// TODO GetFields;
 	unsigned nCreatedTableCount = createdtable.size();
 	unsigned nTableCount = TableNames.size();
 	unsigned nFieldCount;

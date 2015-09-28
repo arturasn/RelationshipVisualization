@@ -275,7 +275,7 @@ void cExecuteSqlite::RecreateUpdateTriggers(CString &RelationFirstTable, CString
 		}
 	}
 }
-void cExecuteSqlite::SaveCurrentDrawing(std::vector<wxString> &createdtables, std::vector<int> &height, std::vector<int> &width, std::vector<int> x_coordinate, std::vector<int> y_coordinate,
+void cExecuteSqlite::SaveCurrentDrawing(std::vector<wxString> &createdtables, std::vector<int> x_coordinate, std::vector<int> y_coordinate,
 	                                    const char *dPath)
 {
 	char *zErrMsg;
@@ -289,7 +289,7 @@ void cExecuteSqlite::SaveCurrentDrawing(std::vector<wxString> &createdtables, st
 	wxString Statement;
 	unsigned nTableCount = createdtables.size();
 	sqlite3_exec(sqlitedatabase, "DROP TABLE SavedRelationships", NULL, NULL, &zErrMsg);
-	Statement = wxT("CREATE TABLE `SavedRelationships` ( `Table` TEXT, `x` INTEGER, `y` INTEGER, `width` INTEGER, `height` INTEGER)");
+	Statement = wxT("CREATE TABLE `SavedRelationships` ( `Table` TEXT, `x` INTEGER, `y` INTEGER)");
 	const char *statementforexecution = Statement.mb_str();
 	sqlite3_exec(sqlitedatabase, "PRAGMA synchronous = OFF", NULL, NULL, &zErrMsg);
 	sqlite3_exec(sqlitedatabase, "PRAGMA journal_mode = MEMORY", NULL, NULL, &zErrMsg);
@@ -298,10 +298,6 @@ void cExecuteSqlite::SaveCurrentDrawing(std::vector<wxString> &createdtables, st
 	{
 		Statement = wxT("INSERT INTO SavedRelationships VALUES ('") + createdtables[i] + wxT("' ,") + wxString::Format(wxT("%i"), x_coordinate[i]) + wxT(",");
 		Statement << y_coordinate[i]; 
-		Statement += wxT(",");
-		Statement << width[i]; 
-		Statement += wxT(","); 
-		Statement << height[i];
 		Statement += wxT(")");
 		statementforexecution = Statement.mb_str();
 		sqlite3_exec(sqlitedatabase, statementforexecution, NULL, NULL, &zErrMsg);

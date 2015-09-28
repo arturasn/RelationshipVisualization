@@ -15,10 +15,10 @@ public:
 									   std::vector<CString> &ForeignKeyFirstField, std::vector<CString> &ForeignKeySecondField, std::vector< std::vector <CString> > &FieldNames,
 									   std::vector<CString> &TableNames, std::vector<CString> &PrimaryKeyFields, std::vector<CString> &deletetriggernames, std::vector<CString> &updatetriggernames, 
 									   std::vector<CString> &TableNamesSQL, std::vector<CString> &uniquefields, std::vector<wxString> &createdtable, std::vector<int> &x, 
-									   std::vector<int> &y, std::vector<int> &width, std::vector<int> &height, std::vector< std::vector<wxString> > &createdfields, const char *Path);
+									   std::vector<int> &y, std::vector< std::vector<wxString> > &createdfields, const char *Path);
 private:
-	static void GetRepaintValues(std::vector<wxString> &createdtable, std::vector<int> &x, std::vector<int> &y, std::vector<int> &width, std::vector<int> &height, 
-		                         std::vector< std::vector<wxString> > &createdfields, std::vector<CString> &TableNames, std::vector< std::vector <CString> > &FieldNames,
+	static void GetRepaintValues(std::vector<wxString> &createdtable, std::vector<int> &x, std::vector<int> &y, std::vector< std::vector<wxString> > &createdfields, 
+								 std::vector<CString> &TableNames, std::vector< std::vector <CString> > &FieldNames,
 								 const char *Path);
 };
 

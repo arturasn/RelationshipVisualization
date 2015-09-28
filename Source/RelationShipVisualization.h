@@ -14,6 +14,7 @@ public:
 	 void SaveTables(wxCommandEvent &WXUNUSED(event) );
 	 void PaintBackground(wxDC &dc);
 	 int GetRectangleWidth(unsigned &nSize, const int &CurMax, const int &selection);
+	 int GetRectangleWidth(int &nSize, const int &CurMax, const int &selection);
 	 static void SaveWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy);
 	 static void GetWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy);
 	 static void GetWindowInformationRemTable(int &sizex, int &sizey, int &posx, int &posy);
@@ -43,6 +44,7 @@ private:
 	 wxString CstringToWxString(CString &String4Conversion);
 	 void GetOneAdditionFields();
 	 int GetIndex(CString sSearch);
+	 int GetIndex(wxString sSearch);
 	 int GetCreatedTableIndex(wxString sSearch);
 	 bool isCreated(CString &sSearch);
 	 wxString RelationshipView(int &FirstTableIndex, int &SecondTableIndex, int &RelationshipIndex, int &RelationFlag);
