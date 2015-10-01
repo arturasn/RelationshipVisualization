@@ -20,6 +20,7 @@ private:
 	static void GetRepaintValues(std::vector<wxString> &createdtable, std::vector<int> &x, std::vector<int> &y, std::vector< std::vector<wxString> > &createdfields, 
 								 std::vector<CString> &TableNames, std::vector< std::vector <CString> > &FieldNames,
 								 const char *Path);
+	static bool IsTable(wxString sSearch, std::vector<CString> &TableNames);
 };
 
 #endif

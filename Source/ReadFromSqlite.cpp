@@ -286,13 +286,16 @@ void ReadSqlite::GetRepaintValues(std::vector<wxString> &createdtable, std::vect
 			const unsigned char *text;
 			text = sqlite3_column_text(stmt, 0);
 			wxString Temp(text);
-			createdtable.push_back(Temp);
-			text = sqlite3_column_text(stmt, 1);
-			wxString Temp2(text);
-			x.push_back(wxAtoi(Temp2));
-			text = sqlite3_column_text(stmt, 2);
-			wxString Temp3(text);
-			y.push_back(wxAtoi(Temp3));
+			if( IsTable(Temp, TableNames) )
+			{
+				createdtable.push_back(Temp);
+				text = sqlite3_column_text(stmt, 1);
+				wxString Temp2(text);
+				x.push_back(wxAtoi(Temp2));
+				text = sqlite3_column_text(stmt, 2);
+				wxString Temp3(text);
+				y.push_back(wxAtoi(Temp3));
+			}
 		}
 		else if(s == SQLITE_DONE)
 		{
@@ -301,6 +304,8 @@ void ReadSqlite::GetRepaintValues(std::vector<wxString> &createdtable, std::vect
 		else exit(1);
 	}
 	sqlite3_finalize(stmt);
+
+
 	unsigned nCreatedTableCount = createdtable.size();
 	unsigned nTableCount = TableNames.size();
 	unsigned nFieldCount;
@@ -328,4 +333,21 @@ void ReadSqlite::GetRepaintValues(std::vector<wxString> &createdtable, std::vect
 		}
 	}
 	sqlite3_close(sqlitedatabase);
+}
+
+bool ReadSqlite::IsTable(wxString sSearch, std::vector<CString> &TableNames)
+{
+	auto end_it = TableNames.end();
+	wxString TableName;
+	for(auto it = TableNames.begin(); it != end_it; ++it)
+	{
+		CT2CA pszConvertedAnsiString ((*it));
+		std::string strStd (pszConvertedAnsiString);
+		TableName = wxString::FromUTF8(_strdup(strStd.c_str() ) );
+		if(TableName == sSearch )
+		{
+			return true;
+		}
+	}
+	return false;
 }
