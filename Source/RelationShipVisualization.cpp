@@ -20,8 +20,8 @@ IMPLEMENT_APP(MyApp)
 		EVT_LEFT_UP(CustomDialog::OnLeftMouseReleased)
 		EVT_MOTION(CustomDialog::OnMouseMoved)
 		EVT_LEAVE_WINDOW(CustomDialog::OnMouseLeftWindow)
-		EVT_TOOL(Show_Relationships, CustomDialog::OnShowRelations)
-		EVT_TOOL(Show_All_Relationships, CustomDialog::OnShowAllRelations)
+		//EVT_TOOL(Show_Relationships, CustomDialog::OnShowRelations)
+		//EVT_TOOL(Show_All_Relationships, CustomDialog::OnShowAllRelations)
 		EVT_TOOL(save_tables, CustomDialog::SaveTables)
 		EVT_TOOL(delete_table, CustomDialog::OnDeleteTable)
 		EVT_LEFT_DCLICK(CustomDialog::OnLeftDoubleClick)
@@ -45,8 +45,8 @@ CustomDialog::CustomDialog(const wxString &title)
 	wxImage::AddHandler( new wxPNGHandler );
 	wxBitmap show_table_img(wxT("show_table.png"), wxBITMAP_TYPE_PNG);
 	wxBitmap show_clear_img(wxT("clear.png"), wxBITMAP_TYPE_PNG);
-	wxBitmap show_relationships_img(wxT("relationships.png"), wxBITMAP_TYPE_PNG);
-	wxBitmap show_all_relationships_img(wxT("allrelationships.png"), wxBITMAP_TYPE_PNG);
+	//wxBitmap show_relationships_img(wxT("relationships.png"), wxBITMAP_TYPE_PNG);
+	//wxBitmap show_all_relationships_img(wxT("allrelationships.png"), wxBITMAP_TYPE_PNG);
 	wxBitmap open_img(wxT("openicon.png"), wxBITMAP_TYPE_PNG);
 	wxBitmap save_img(wxT("save.png"), wxBITMAP_TYPE_PNG);
 	wxBitmap delete_img(wxT("remove.png"), wxBITMAP_TYPE_PNG);
@@ -58,8 +58,8 @@ CustomDialog::CustomDialog(const wxString &title)
 	MainToolBar->AddTool(Show_Table, show_table_img, wxT("Show Table"));
 	MainToolBar->AddTool(delete_table, delete_img, wxT("Remove Table"));
 	MainToolBar->AddTool(Clear_Layout, show_clear_img, wxT("Clear Layout"));
-	MainToolBar->AddTool(Show_Relationships, show_relationships_img, wxT("Show Direct Relationships"));
-	MainToolBar->AddTool(Show_All_Relationships, show_all_relationships_img, wxT("Show All Relationships"));
+	//MainToolBar->AddTool(Show_Relationships, show_relationships_img, wxT("Show Direct Relationships"));
+	//MainToolBar->AddTool(Show_All_Relationships, show_all_relationships_img, wxT("Show All Relationships"));
 	MainToolBar->AddTool(save_tables, save_img, wxT("Save current painted canvas"));
 	
     MainToolBar->Realize();
@@ -484,6 +484,7 @@ void CustomDialog::OnPaint(wxPaintEvent &WXUNUSED (event))
 	
 	unsigned nFieldSize;
 	int yCoord;
+	int maximum = 0;
 	wxString temp;
 
 	unsigned nSize = Get.m_createdtable.size();
@@ -496,6 +497,8 @@ void CustomDialog::OnPaint(wxPaintEvent &WXUNUSED (event))
 		nFieldSize = Get.m_createdfields[i].size();
 		Get.m_createdfieldcoordy.push_back(temp2);
 		yCoord = Get.m_y[i] + 15;
+		if(nFieldSize > maximum)
+			maximum = nFieldSize;
 		for(unsigned i1 = 0; i1 < nFieldSize; ++i1)
 		{
 			CT2CA pszConvertedAnsiString (Get.m_createdfields[i][i1]);
@@ -517,6 +520,8 @@ void CustomDialog::OnPaint(wxPaintEvent &WXUNUSED (event))
 	for( unsigned i = 0; i < nDrawnLineCount; ++i )
 	{
 		FieldIndexes = GetFieldIndex(Drawnline[i].first, Drawnline[i].second, Get.m_RelationIndex[i].first, Get.m_RelationIndex[i].second);
+		if(FieldIndexes.first < 0 || FieldIndexes.first > maximum || FieldIndexes.second < 0 || FieldIndexes.second > maximum)
+			continue;
 		dc.SetPen( wxPen( wxColor(0,0,0), 3 ) );
 		dc.DrawLine(Get.m_x[Drawnline[i].first], Get.m_createdfieldcoordy[Drawnline[i].first][FieldIndexes.first], Get.m_x[Drawnline[i].first] - 15, Get.m_createdfieldcoordy[Drawnline[i].first][FieldIndexes.first]);
 		if( Get.m_oneaddition[Drawnline[i].first][FieldIndexes.first])
@@ -627,139 +632,139 @@ std::pair<int,int> CustomDialog::GetFieldIndex(int &FirstTableIndex, int &Second
 void CustomDialog::OnEraseBackGround(wxEraseEvent &WXUNUSED(event))
 {
 }
-void CustomDialog::OnShowRelations(wxCommandEvent &WXUNUSED (event) )
-{	
-	unsigned nSize = Get.m_createdtable.size();
-	unsigned nDeleteRelationCount = Get.m_deletefirstrelation.size();
-	unsigned nUpdateRelationCount = Get.m_updatefirstrelation.size();
-	unsigned nForeignKeyCount = Get.m_foreignkeyfirsttable.size();
-	unsigned nFieldSize;
-	unsigned ind;
-	std::vector <wxString> temp;
-	for(unsigned i = 0; i < nSize; ++i)
-	{
-		for(unsigned i1 = 0; i1 < nDeleteRelationCount; ++i1)
-			{
-				if( !(Get.m_createdtable[i].Cmp(Get.m_deletefirstrelation[i1].first)) )
-				{
-					if ( isCreated(Get.m_deletesecondrelation[i1].first) )
-						continue;
-					Get.m_createdtable.push_back( CstringToWxString(Get.m_deletesecondrelation[i1].first) );
-					Get.m_x.push_back ( ::rand() % 700  + 20);
-					Get.m_y.push_back( ::rand() % 700 + 20);
-					Get.m_createdfields.push_back( temp );
-					ind = GetIndex(Get.m_deletesecondrelation[i1].first);
-					nFieldSize = Get.m_fieldnames[ind].size();
-					for( unsigned i2 = 0; i2 < nFieldSize; ++i2 )
-						Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i2]) );
-					Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
-					Get.m_height.push_back(28 + 10 * nFieldSize);
-
-				}
-
-
-				if( !(Get.m_createdtable[i].Cmp(Get.m_deletesecondrelation[i1].first)) )
-				{
-					if ( isCreated(Get.m_deletefirstrelation[i1].first) )
-						continue;
-					Get.m_createdtable.push_back( CstringToWxString(Get.m_deletefirstrelation[i1].first) );
-					Get.m_x.push_back ( ::rand() % 700  + 20);
-					Get.m_y.push_back( ::rand() % 700 + 20);
-					Get.m_createdfields.push_back( temp );
-					ind = GetIndex(Get.m_deletefirstrelation[i1].first);
-					nFieldSize = Get.m_fieldnames[ind].size();
-					for( unsigned i2 = 0; i2 < nFieldSize; ++i2 )
-						Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i2]) );
-					Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
-					Get.m_height.push_back(28 + 10 * nFieldSize);
-
-				}
-			}
-	}
-
-	for(unsigned i = 0; i < nSize; ++i)
-	{
-		for(unsigned i1 = 0; i1 < nUpdateRelationCount; ++i1)
-			{
-				if( !(Get.m_createdtable[i].Cmp(Get.m_updatefirstrelation[i1].first)) )
-				{
-					if ( isCreated(Get.m_updatesecondrelation[i1].first) )
-						continue;
-					Get.m_createdtable.push_back( CstringToWxString(Get.m_updatesecondrelation[i1].first) );
-					Get.m_x.push_back ( ::rand() % 700 + 20);
-					Get.m_y.push_back( ::rand() % 700 + 20);
-					Get.m_createdfields.push_back( temp );
-					ind = GetIndex(Get.m_updatesecondrelation[i1].first);
-					nFieldSize = Get.m_fieldnames[ind].size();
-					for( unsigned i2 = 0; i2 < nFieldSize; ++i2 )
-						Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i2]) );
-					Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
-					Get.m_height.push_back(28 + 10 * nFieldSize);
-				}
-
-				if( !(Get.m_createdtable[i].Cmp(Get.m_updatesecondrelation[i1].first)) )
-				{
-					if ( isCreated(Get.m_updatefirstrelation[i1].first) )
-						continue;
-					Get.m_createdtable.push_back( CstringToWxString(Get.m_updatefirstrelation[i1].first) );
-					Get.m_x.push_back ( ::rand() % 700 + 20);
-					Get.m_y.push_back( ::rand() % 700 + 20);
-					Get.m_createdfields.push_back( temp );
-					ind = GetIndex(Get.m_updatefirstrelation[i1].first);
-					nFieldSize = Get.m_fieldnames[ind].size();
-					for( unsigned i2 = 0; i2 < nFieldSize; ++i2 )
-						Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i2]) );
-					Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
-					Get.m_height.push_back(28 + 10 * nFieldSize);
-				}
-			}
-	}
-
-	for(unsigned i = 0; i < nSize; ++i)
-	{
-		for(unsigned i1 = 0; i1 < nForeignKeyCount; ++i1)
-			{
-				if( !(Get.m_createdtable[i].Cmp(Get.m_foreignkeyfirsttable[i1])) )
-				{
-					if ( isCreated(Get.m_foreignkeysecondtable[i1]) )
-						continue;
-					Get.m_createdtable.push_back( CstringToWxString(Get.m_foreignkeysecondtable[i1]) );
-					Get.m_x.push_back ( ::rand() % 700 + 20);
-					Get.m_y.push_back( ::rand() % 700 + 20);
-					Get.m_createdfields.push_back( temp );
-					ind = GetIndex(Get.m_foreignkeysecondtable[i1]);
-					nFieldSize = Get.m_fieldnames[ind].size();
-					for( unsigned i2 = 0; i2 < nFieldSize; ++i2 )
-						Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i2]) );
-					Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
-					Get.m_height.push_back(28 + 10 * nFieldSize);
-				}
-
-				if( !(Get.m_createdtable[i].Cmp(Get.m_foreignkeysecondtable[i1])) )
-				{
-					if ( isCreated(Get.m_foreignkeyfirsttable[i1]) )
-						continue;
-					Get.m_createdtable.push_back( CstringToWxString(Get.m_foreignkeyfirsttable[i1]) );
-					Get.m_x.push_back ( ::rand() % 700 + 20);
-					Get.m_y.push_back( ::rand() % 700 + 20);
-					Get.m_createdfields.push_back( temp );
-					ind = GetIndex(Get.m_foreignkeyfirsttable[i1]);
-					nFieldSize = Get.m_fieldnames[ind].size();
-					for( unsigned i2 = 0; i2 < nFieldSize; ++i2 )
-						Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i2]) );
-					Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
-					Get.m_height.push_back(28 + 10 * nFieldSize);
-				}
-			}
-	}
-	nSize = Get.m_createdtable.size();
-	Get.m_previous_mouse_x.resize(nSize);
-	Get.m_previous_mouse_y.resize(nSize);
-	GetOneAdditionFields();
-	//GetRelationLines();
-    Refresh(); 
-	Update();
-}
+//void CustomDialog::OnShowRelations(wxCommandEvent &WXUNUSED (event) )
+//{	
+//	unsigned nSize = Get.m_createdtable.size();
+//	unsigned nDeleteRelationCount = Get.m_deletefirstrelation.size();
+//	unsigned nUpdateRelationCount = Get.m_updatefirstrelation.size();
+//	unsigned nForeignKeyCount = Get.m_foreignkeyfirsttable.size();
+//	unsigned nFieldSize;
+//	unsigned ind;
+//	std::vector <wxString> temp;
+//	for(unsigned i = 0; i < nSize; ++i)
+//	{
+//		for(unsigned i1 = 0; i1 < nDeleteRelationCount; ++i1)
+//			{
+//				if( !(Get.m_createdtable[i].Cmp(Get.m_deletefirstrelation[i1].first)) )
+//				{
+//					if ( isCreated(Get.m_deletesecondrelation[i1].first) )
+//						continue;
+//					Get.m_createdtable.push_back( CstringToWxString(Get.m_deletesecondrelation[i1].first) );
+//					Get.m_x.push_back ( ::rand() % 700  + 20);
+//					Get.m_y.push_back( ::rand() % 700 + 20);
+//					Get.m_createdfields.push_back( temp );
+//					ind = GetIndex(Get.m_deletesecondrelation[i1].first);
+//					nFieldSize = Get.m_fieldnames[ind].size();
+//					for( unsigned i2 = 0; i2 < nFieldSize; ++i2 )
+//						Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i2]) );
+//					Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
+//					Get.m_height.push_back(28 + 10 * nFieldSize);
+//
+//				}
+//
+//
+//				if( !(Get.m_createdtable[i].Cmp(Get.m_deletesecondrelation[i1].first)) )
+//				{
+//					if ( isCreated(Get.m_deletefirstrelation[i1].first) )
+//						continue;
+//					Get.m_createdtable.push_back( CstringToWxString(Get.m_deletefirstrelation[i1].first) );
+//					Get.m_x.push_back ( ::rand() % 700  + 20);
+//					Get.m_y.push_back( ::rand() % 700 + 20);
+//					Get.m_createdfields.push_back( temp );
+//					ind = GetIndex(Get.m_deletefirstrelation[i1].first);
+//					nFieldSize = Get.m_fieldnames[ind].size();
+//					for( unsigned i2 = 0; i2 < nFieldSize; ++i2 )
+//						Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i2]) );
+//					Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
+//					Get.m_height.push_back(28 + 10 * nFieldSize);
+//
+//				}
+//			}
+//	}
+//
+//	for(unsigned i = 0; i < nSize; ++i)
+//	{
+//		for(unsigned i1 = 0; i1 < nUpdateRelationCount; ++i1)
+//			{
+//				if( !(Get.m_createdtable[i].Cmp(Get.m_updatefirstrelation[i1].first)) )
+//				{
+//					if ( isCreated(Get.m_updatesecondrelation[i1].first) )
+//						continue;
+//					Get.m_createdtable.push_back( CstringToWxString(Get.m_updatesecondrelation[i1].first) );
+//					Get.m_x.push_back ( ::rand() % 700 + 20);
+//					Get.m_y.push_back( ::rand() % 700 + 20);
+//					Get.m_createdfields.push_back( temp );
+//					ind = GetIndex(Get.m_updatesecondrelation[i1].first);
+//					nFieldSize = Get.m_fieldnames[ind].size();
+//					for( unsigned i2 = 0; i2 < nFieldSize; ++i2 )
+//						Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i2]) );
+//					Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
+//					Get.m_height.push_back(28 + 10 * nFieldSize);
+//				}
+//
+//				if( !(Get.m_createdtable[i].Cmp(Get.m_updatesecondrelation[i1].first)) )
+//				{
+//					if ( isCreated(Get.m_updatefirstrelation[i1].first) )
+//						continue;
+//					Get.m_createdtable.push_back( CstringToWxString(Get.m_updatefirstrelation[i1].first) );
+//					Get.m_x.push_back ( ::rand() % 700 + 20);
+//					Get.m_y.push_back( ::rand() % 700 + 20);
+//					Get.m_createdfields.push_back( temp );
+//					ind = GetIndex(Get.m_updatefirstrelation[i1].first);
+//					nFieldSize = Get.m_fieldnames[ind].size();
+//					for( unsigned i2 = 0; i2 < nFieldSize; ++i2 )
+//						Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i2]) );
+//					Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
+//					Get.m_height.push_back(28 + 10 * nFieldSize);
+//				}
+//			}
+//	}
+//
+//	for(unsigned i = 0; i < nSize; ++i)
+//	{
+//		for(unsigned i1 = 0; i1 < nForeignKeyCount; ++i1)
+//			{
+//				if( !(Get.m_createdtable[i].Cmp(Get.m_foreignkeyfirsttable[i1])) )
+//				{
+//					if ( isCreated(Get.m_foreignkeysecondtable[i1]) )
+//						continue;
+//					Get.m_createdtable.push_back( CstringToWxString(Get.m_foreignkeysecondtable[i1]) );
+//					Get.m_x.push_back ( ::rand() % 700 + 20);
+//					Get.m_y.push_back( ::rand() % 700 + 20);
+//					Get.m_createdfields.push_back( temp );
+//					ind = GetIndex(Get.m_foreignkeysecondtable[i1]);
+//					nFieldSize = Get.m_fieldnames[ind].size();
+//					for( unsigned i2 = 0; i2 < nFieldSize; ++i2 )
+//						Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i2]) );
+//					Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
+//					Get.m_height.push_back(28 + 10 * nFieldSize);
+//				}
+//
+//				if( !(Get.m_createdtable[i].Cmp(Get.m_foreignkeysecondtable[i1])) )
+//				{
+//					if ( isCreated(Get.m_foreignkeyfirsttable[i1]) )
+//						continue;
+//					Get.m_createdtable.push_back( CstringToWxString(Get.m_foreignkeyfirsttable[i1]) );
+//					Get.m_x.push_back ( ::rand() % 700 + 20);
+//					Get.m_y.push_back( ::rand() % 700 + 20);
+//					Get.m_createdfields.push_back( temp );
+//					ind = GetIndex(Get.m_foreignkeyfirsttable[i1]);
+//					nFieldSize = Get.m_fieldnames[ind].size();
+//					for( unsigned i2 = 0; i2 < nFieldSize; ++i2 )
+//						Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i2]) );
+//					Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
+//					Get.m_height.push_back(28 + 10 * nFieldSize);
+//				}
+//			}
+//	}
+//	nSize = Get.m_createdtable.size();
+//	Get.m_previous_mouse_x.resize(nSize);
+//	Get.m_previous_mouse_y.resize(nSize);
+//	GetOneAdditionFields();
+//	//GetRelationLines();
+//    Refresh(); 
+//	Update();
+//}
 void CustomDialog::GetRelationLines(std::vector<std::pair<int, int>> &Drawnline, unsigned &nSize)
 {
 	wxString temp;
@@ -905,126 +910,126 @@ bool CustomDialog::isCreated(CString &sSearch)
 	}
 	return false;
 }
-void CustomDialog::OnShowAllRelations(wxCommandEvent &WXUNUSED(event) )
-{
-	Get.m_createdfields.clear();
-	Get.m_createdfieldcoordy.clear();
-	Get.m_createdtable.clear();
-	Get.m_height.clear();
-	Get.m_oneaddition.clear();
-	Get.m_previous_mouse_x.clear();
-	Get.m_previous_mouse_y.clear();
-	Get.m_x.clear();
-	Get.m_y.clear();
-	Get.m_width.clear();
-	unsigned nDeleteRelationCount = Get.m_deletefirstrelation.size();
-	unsigned nUpdateRelationCount = Get.m_updatefirstrelation.size();
-	unsigned nForeignKeyCount = Get.m_foreignkeyfirsttable.size();
-	std::vector<wxString> temp;
-	int ind;
-	unsigned nFieldSize;
-	for( unsigned i = 0; i < nDeleteRelationCount; ++i )
-	{
-		if ( !(isCreated(Get.m_deletefirstrelation[i].first)) )
-		{
-			Get.m_createdtable.push_back( CstringToWxString(Get.m_deletefirstrelation[i].first) );
-			Get.m_x.push_back ( ::rand() % 700 + 20);
-			Get.m_y.push_back( ::rand() % 700 + 20);
-			Get.m_createdfields.push_back( temp );
-			ind = GetIndex(Get.m_deletefirstrelation[i].first);
-			nFieldSize = Get.m_fieldnames[ind].size();
-			for( unsigned i1 = 0; i1 < nFieldSize; ++i1 )
-				Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i1]) );
-			Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
-			Get.m_height.push_back(28 + 10 * nFieldSize);
-		}
-
-		if ( !(isCreated(Get.m_deletesecondrelation[i].first)) )
-		{
-			Get.m_createdtable.push_back( CstringToWxString(Get.m_deletesecondrelation[i].first) );
-			Get.m_x.push_back ( ::rand() % 700 + 20);
-			Get.m_y.push_back( ::rand() % 700 + 20);
-			Get.m_createdfields.push_back( temp );
-			ind = GetIndex(Get.m_deletesecondrelation[i].first);
-			nFieldSize = Get.m_fieldnames[ind].size();
-			for( unsigned i1 = 0; i1 < nFieldSize; ++i1 )
-				Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i1]) );
-			Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
-			Get.m_height.push_back(28 + 10 * nFieldSize);
-		}
-	}
-
-
-
-	for( unsigned i = 0; i < nUpdateRelationCount; ++i )
-	{
-		if ( !(isCreated(Get.m_updatefirstrelation[i].first)) )
-		{
-			Get.m_createdtable.push_back( CstringToWxString(Get.m_updatefirstrelation[i].first) );
-			Get.m_x.push_back ( ::rand() % 700 + 20);
-			Get.m_y.push_back( ::rand() % 700 + 20);
-			Get.m_createdfields.push_back( temp );
-			ind = GetIndex(Get.m_updatefirstrelation[i].first);
-			nFieldSize = Get.m_fieldnames[ind].size();
-			for( unsigned i1 = 0; i1 < nFieldSize; ++i1 )
-				Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i1]) );
-			Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
-			Get.m_height.push_back(28 + 10 * nFieldSize);
-		}
-
-		if ( !(isCreated(Get.m_updatesecondrelation[i].first)) )
-		{
-			Get.m_createdtable.push_back( CstringToWxString(Get.m_updatesecondrelation[i].first) );
-			Get.m_x.push_back ( ::rand() % 700 + 20);
-			Get.m_y.push_back( ::rand() % 700 + 20);
-			Get.m_createdfields.push_back( temp );
-			ind = GetIndex(Get.m_updatesecondrelation[i].first);
-			nFieldSize = Get.m_fieldnames[ind].size();
-			for( unsigned i1 = 0; i1 < nFieldSize; ++i1 )
-				Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i1]) );
-			Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
-			Get.m_height.push_back(28 + 10 * nFieldSize);
-		}
-	}
-
-
-	for( unsigned i = 0; i < nForeignKeyCount; ++i )
-	{
-		if ( !(isCreated(Get.m_foreignkeyfirsttable[i])) )
-		{
-			Get.m_createdtable.push_back( CstringToWxString(Get.m_foreignkeyfirsttable[i]) );
-			Get.m_x.push_back ( ::rand() % 700 + 20);
-			Get.m_y.push_back( ::rand() % 700 + 20);
-			Get.m_createdfields.push_back( temp );
-			ind = GetIndex(Get.m_foreignkeyfirsttable[i]);
-			nFieldSize = Get.m_fieldnames[ind].size();
-			for( unsigned i1 = 0; i1 < nFieldSize; ++i1 )
-				Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i1]) );
-			Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
-			Get.m_height.push_back(28 + 10 * nFieldSize);
-		}
-
-		if ( !(isCreated(Get.m_foreignkeysecondtable[i])) )
-		{
-			Get.m_createdtable.push_back( CstringToWxString(Get.m_foreignkeysecondtable[i]) );
-			Get.m_x.push_back ( ::rand() % 700 + 20);
-			Get.m_y.push_back( ::rand() % 700 + 20);
-			Get.m_createdfields.push_back( temp );
-			ind = GetIndex(Get.m_foreignkeysecondtable[i]);
-			nFieldSize = Get.m_fieldnames[ind].size();
-			for( unsigned i1 = 0; i1 < nFieldSize; ++i1 )
-				Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i1]) );
-			Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
-			Get.m_height.push_back(28 + 10 * nFieldSize);
-		}
-	}
-	unsigned nSize = Get.m_createdtable.size();
-	Get.m_previous_mouse_x.resize(nSize);
-	Get.m_previous_mouse_y.resize(nSize);
-	GetOneAdditionFields();
-    Refresh(); 
-	Update();
-}
+//void CustomDialog::OnShowAllRelations(wxCommandEvent &WXUNUSED(event) )
+//{
+//	Get.m_createdfields.clear();
+//	Get.m_createdfieldcoordy.clear();
+//	Get.m_createdtable.clear();
+//	Get.m_height.clear();
+//	Get.m_oneaddition.clear();
+//	Get.m_previous_mouse_x.clear();
+//	Get.m_previous_mouse_y.clear();
+//	Get.m_x.clear();
+//	Get.m_y.clear();
+//	Get.m_width.clear();
+//	unsigned nDeleteRelationCount = Get.m_deletefirstrelation.size();
+//	unsigned nUpdateRelationCount = Get.m_updatefirstrelation.size();
+//	unsigned nForeignKeyCount = Get.m_foreignkeyfirsttable.size();
+//	std::vector<wxString> temp;
+//	int ind;
+//	unsigned nFieldSize;
+//	for( unsigned i = 0; i < nDeleteRelationCount; ++i )
+//	{
+//		if ( !(isCreated(Get.m_deletefirstrelation[i].first)) )
+//		{
+//			Get.m_createdtable.push_back( CstringToWxString(Get.m_deletefirstrelation[i].first) );
+//			Get.m_x.push_back ( ::rand() % 700 + 20);
+//			Get.m_y.push_back( ::rand() % 700 + 20);
+//			Get.m_createdfields.push_back( temp );
+//			ind = GetIndex(Get.m_deletefirstrelation[i].first);
+//			nFieldSize = Get.m_fieldnames[ind].size();
+//			for( unsigned i1 = 0; i1 < nFieldSize; ++i1 )
+//				Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i1]) );
+//			Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
+//			Get.m_height.push_back(28 + 10 * nFieldSize);
+//		}
+//
+//		if ( !(isCreated(Get.m_deletesecondrelation[i].first)) )
+//		{
+//			Get.m_createdtable.push_back( CstringToWxString(Get.m_deletesecondrelation[i].first) );
+//			Get.m_x.push_back ( ::rand() % 700 + 20);
+//			Get.m_y.push_back( ::rand() % 700 + 20);
+//			Get.m_createdfields.push_back( temp );
+//			ind = GetIndex(Get.m_deletesecondrelation[i].first);
+//			nFieldSize = Get.m_fieldnames[ind].size();
+//			for( unsigned i1 = 0; i1 < nFieldSize; ++i1 )
+//				Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i1]) );
+//			Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
+//			Get.m_height.push_back(28 + 10 * nFieldSize);
+//		}
+//	}
+//
+//
+//
+//	for( unsigned i = 0; i < nUpdateRelationCount; ++i )
+//	{
+//		if ( !(isCreated(Get.m_updatefirstrelation[i].first)) )
+//		{
+//			Get.m_createdtable.push_back( CstringToWxString(Get.m_updatefirstrelation[i].first) );
+//			Get.m_x.push_back ( ::rand() % 700 + 20);
+//			Get.m_y.push_back( ::rand() % 700 + 20);
+//			Get.m_createdfields.push_back( temp );
+//			ind = GetIndex(Get.m_updatefirstrelation[i].first);
+//			nFieldSize = Get.m_fieldnames[ind].size();
+//			for( unsigned i1 = 0; i1 < nFieldSize; ++i1 )
+//				Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i1]) );
+//			Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
+//			Get.m_height.push_back(28 + 10 * nFieldSize);
+//		}
+//
+//		if ( !(isCreated(Get.m_updatesecondrelation[i].first)) )
+//		{
+//			Get.m_createdtable.push_back( CstringToWxString(Get.m_updatesecondrelation[i].first) );
+//			Get.m_x.push_back ( ::rand() % 700 + 20);
+//			Get.m_y.push_back( ::rand() % 700 + 20);
+//			Get.m_createdfields.push_back( temp );
+//			ind = GetIndex(Get.m_updatesecondrelation[i].first);
+//			nFieldSize = Get.m_fieldnames[ind].size();
+//			for( unsigned i1 = 0; i1 < nFieldSize; ++i1 )
+//				Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i1]) );
+//			Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
+//			Get.m_height.push_back(28 + 10 * nFieldSize);
+//		}
+//	}
+//
+//
+//	for( unsigned i = 0; i < nForeignKeyCount; ++i )
+//	{
+//		if ( !(isCreated(Get.m_foreignkeyfirsttable[i])) )
+//		{
+//			Get.m_createdtable.push_back( CstringToWxString(Get.m_foreignkeyfirsttable[i]) );
+//			Get.m_x.push_back ( ::rand() % 700 + 20);
+//			Get.m_y.push_back( ::rand() % 700 + 20);
+//			Get.m_createdfields.push_back( temp );
+//			ind = GetIndex(Get.m_foreignkeyfirsttable[i]);
+//			nFieldSize = Get.m_fieldnames[ind].size();
+//			for( unsigned i1 = 0; i1 < nFieldSize; ++i1 )
+//				Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i1]) );
+//			Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
+//			Get.m_height.push_back(28 + 10 * nFieldSize);
+//		}
+//
+//		if ( !(isCreated(Get.m_foreignkeysecondtable[i])) )
+//		{
+//			Get.m_createdtable.push_back( CstringToWxString(Get.m_foreignkeysecondtable[i]) );
+//			Get.m_x.push_back ( ::rand() % 700 + 20);
+//			Get.m_y.push_back( ::rand() % 700 + 20);
+//			Get.m_createdfields.push_back( temp );
+//			ind = GetIndex(Get.m_foreignkeysecondtable[i]);
+//			nFieldSize = Get.m_fieldnames[ind].size();
+//			for( unsigned i1 = 0; i1 < nFieldSize; ++i1 )
+//				Get.m_createdfields.back().push_back( CstringToWxString(Get.m_fieldnames[ind][i1]) );
+//			Get.m_width.push_back( 8 * GetRectangleWidth( nFieldSize, Get.m_tablenames[ind].GetLength(), ind ) );
+//			Get.m_height.push_back(28 + 10 * nFieldSize);
+//		}
+//	}
+//	unsigned nSize = Get.m_createdtable.size();
+//	Get.m_previous_mouse_x.resize(nSize);
+//	Get.m_previous_mouse_y.resize(nSize);
+//	GetOneAdditionFields();
+//    Refresh(); 
+//	Update();
+//}
 void CustomDialog::OnLeftDoubleClick(wxMouseEvent &event)
 {
 	wxClientDC dc(this);

@@ -32,8 +32,8 @@ private:
 	 void OnMouseMoved(wxMouseEvent& event);
 	 void OnMouseLeftWindow(wxMouseEvent &WXUNUSED( event));
 	 void OnPaint(wxPaintEvent &event);
-	 void OnShowAllRelations(wxCommandEvent &WXUNUSED(event) );
-	 void OnShowRelations(wxCommandEvent &WXUNUSED (event) ); 
+	 //void OnShowAllRelations(wxCommandEvent &WXUNUSED(event) );
+	 //void OnShowRelations(wxCommandEvent &WXUNUSED (event) ); 
 	 void OnLeftDoubleClick(wxMouseEvent & event);
 	 void GetRelationLines(std::vector<std::pair<int, int>> &Drawnline, unsigned &nSize);
 	 
