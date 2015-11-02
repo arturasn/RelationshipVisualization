@@ -15,8 +15,8 @@ public:
 	 void PaintBackground(wxDC &dc);
 	 int GetRectangleWidth(unsigned &nSize, const int &CurMax, const int &selection);
 	 int GetRectangleWidth(int &nSize, const int &CurMax, const int &selection);
-	 static void SaveWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy);
-	 static void GetWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy);
+	 static void SaveWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy, bool &isChecked);
+	 static void GetWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy, bool &isChecked);
 	 static void GetWindowInformationRemTable(int &sizex, int &sizey, int &posx, int &posy);
 	 static void SaveWindowInformationRemTable(int &sizex, int &sizey, int &posx, int &posy);
 private:
@@ -32,10 +32,12 @@ private:
 	 void OnMouseMoved(wxMouseEvent& event);
 	 void OnMouseLeftWindow(wxMouseEvent &WXUNUSED( event));
 	 void OnPaint(wxPaintEvent &event);
+	 void OnExcludeCb(wxCommandEvent &WXUNUSED(event));
 	 //void OnShowAllRelations(wxCommandEvent &WXUNUSED(event) );
 	 //void OnShowRelations(wxCommandEvent &WXUNUSED (event) ); 
 	 void OnLeftDoubleClick(wxMouseEvent & event);
 	 void GetRelationLines(std::vector<std::pair<int, int>> &Drawnline, unsigned &nSize);
+	 void UpdateAddTableData();
 	 
 	 void MakeTableSelected();
 	 void EditRelationShips(wxString &FirstRelationTable, wxString &FirstRelationField, wxString &SecondRelationTable, wxString &SecondRelationField, const bool &bUpdateCascade,
@@ -50,7 +52,12 @@ private:
 	 wxString RelationshipView(int &FirstTableIndex, int &SecondTableIndex, int &RelationshipIndex, int &RelationFlag);
 	 double Triangle(double a, double b, double c);
 	 wxDECLARE_EVENT_TABLE();
+
+private:
+	wxCheckBox *m_pCheckbox;
 };
+
+
 
 class MyApp : public wxApp
 {
@@ -67,7 +74,8 @@ enum
 	add_table,
 	save_tables,
 	delete_table,
-	remove_table
+	remove_table,
+	add_checkbox
 };
 
 DECLARE_APP(MyApp)

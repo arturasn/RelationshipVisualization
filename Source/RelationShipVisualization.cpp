@@ -1,8 +1,6 @@
 #define _AFXDLL
 #include "stdafx.h"
-#include <vector>
 #include <wx/wx.h>
-#include <wx/frame.h>
 #include <wx/dcbuffer.h>
 #include "RelationshipInfo.h"
 #include "ExecuteSqlite.h"
@@ -76,7 +74,8 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 		*sizey = new int,
 		*posx = new int,
 		*posy = new int;
-	GetWindowInformationAddTable(*sizex,*sizey, *posx, *posy);
+	bool isChecked = false;
+	GetWindowInformationAddTable(*sizex,*sizey, *posx, *posy, isChecked);
 	wxDialog *dlg = new wxDialog(NULL, wxID_ANY, wxT("Show Tables"), wxPoint(*posx,*posy), wxSize(*sizex,*sizey), wxCAPTION|wxCLOSE_BOX|wxRESIZE_BORDER);
 
 	wxBoxSizer *sShowTables = new wxBoxSizer(wxVERTICAL);
@@ -98,7 +97,8 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 	
 	wxButton *addbutton = new wxButton(dlg, add_table, "Add", wxDefaultPosition, wxSize(60,25));
 	wxButton *closebutton = new wxButton(dlg, wxID_CANCEL, "Close", wxDefaultPosition, wxSize(60,25));
-
+	m_pCheckbox = new wxCheckBox(dlg, add_checkbox, wxT("Exclude created tables"));
+	m_pCheckbox->SetValue(isChecked);
 	wxBoxSizer *horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer *verticalSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -109,24 +109,27 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 	horizontalSizer->Add(verticalSizer, 0, wxALIGN_RIGHT | wxRIGHT , 5);
 
 	sShowTables->Add(horizontalSizer, 1, wxLEFT | wxTOP | wxEXPAND, 5);
+	sShowTables->Add(m_pCheckbox, 0, wxLEFT|wxTOP|wxBOTTOM, 5);
 	dlg->SetSizer(sShowTables);
 
 	addbutton->Connect(add_table, wxEVT_BUTTON, wxCommandEventHandler(CustomDialog::OnAddTable), NULL, this);
+	m_pCheckbox->Connect(add_checkbox, wxEVT_CHECKBOX, wxCommandEventHandler(CustomDialog::OnExcludeCb), NULL, this);
 
 	if( dlg->ShowModal() == wxID_CANCEL)
 	{
+		isChecked = m_pCheckbox->IsChecked();
 		dlg->GetSize(sizex,sizey);
 		dlg->GetPosition(posx,posy);
-		SaveWindowInformationAddTable(*sizex,*sizey, *posx, *posy);
+		SaveWindowInformationAddTable(*sizex,*sizey, *posx, *posy, isChecked);
 	}
 	dlg->Destroy();
 	delete sizex;
 	delete sizey;
 	delete posx;
 	delete posy;
-	delete addbutton;
+	/*delete addbutton;
 	delete closebutton;
-	delete m_pTables;
+	delete m_pTables;*/
 }
 void CustomDialog::OnOpenFile( wxCommandEvent &WXUNUSED(event) )
 {
@@ -195,6 +198,7 @@ void CustomDialog::OnOpenFile( wxCommandEvent &WXUNUSED(event) )
 }
 void CustomDialog::OnAddTable( wxCommandEvent &WXUNUSED(event) )
 {
+	
 	int selection = GetIndex(m_pTables->GetString(m_pTables->GetSelection()));
 	if( selection != wxNOT_FOUND )
 	{
@@ -202,7 +206,8 @@ void CustomDialog::OnAddTable( wxCommandEvent &WXUNUSED(event) )
 		int m = ::rand() % 700 + 20;
 		Get.m_x.push_back(n);
 		Get.m_y.push_back(m);
-		Get.m_createdtable.push_back(m_pChoices[m_pTables->GetSelection()]);
+		//Get.m_createdtable.push_back(m_pChoices[m_pTables->GetSelection()]);
+		Get.m_createdtable.push_back(m_pTables->GetString(m_pTables->GetSelection()));
 		unsigned nSize = Get.m_createdtable.size();
 		Get.m_previous_mouse_x.resize(nSize);
 		Get.m_previous_mouse_y.resize(nSize);
@@ -223,6 +228,10 @@ void CustomDialog::OnAddTable( wxCommandEvent &WXUNUSED(event) )
 		}
 		GetOneAdditionFields();
 		//GetRelationLines();
+		if( m_pCheckbox->IsChecked() )
+		{
+		  UpdateAddTableData();
+		}
         Refresh(); 
 		Update();
 	}	
@@ -277,9 +286,9 @@ void CustomDialog::OnDeleteTable( wxCommandEvent &WXUNUSED(event) )
 	delete posy;
 	delete sizex;
 	delete sizey;
-	delete removebutton;
+	/*delete removebutton;
 	delete closebutton;
-	delete m_pCreatedtableslist;
+	delete m_pCreatedtableslist;*/
 }
 void CustomDialog::OnRemoveTable( wxCommandEvent &WXUNUSED(event) )
 {
@@ -765,6 +774,13 @@ void CustomDialog::OnEraseBackGround(wxEraseEvent &WXUNUSED(event))
 //    Refresh(); 
 //	Update();
 //}
+void CustomDialog::OnExcludeCb(wxCommandEvent &WXUNUSED(event))
+{
+	if( m_pCheckbox->IsChecked() )
+	{
+		UpdateAddTableData();
+	}
+}
 void CustomDialog::GetRelationLines(std::vector<std::pair<int, int>> &Drawnline, unsigned &nSize)
 {
 	wxString temp;
@@ -1030,6 +1046,26 @@ bool CustomDialog::isCreated(CString &sSearch)
 //    Refresh(); 
 //	Update();
 //}
+void CustomDialog::UpdateAddTableData()
+ {
+	 int nTableCount = Get.m_tablenames.size();
+		int ind = -1;
+		m_pTables->Clear();
+		m_pChoices.Clear();
+		for( int i = 0; i < nTableCount; ++i )
+		{
+			if( GetCreatedTableIndex(CstringToWxString(Get.m_tablenames[i])) != -1){	
+				continue;
+				}
+		  ind++;
+		  CT2CA pszConvertedAnsiString (Get.m_tablenames[i]);
+	      std::string strStd (pszConvertedAnsiString);
+		  m_pTables->Insert(wxString::FromUTF8(_strdup(strStd.c_str() ) ), ind); 
+		  m_pChoices.Insert(wxString::FromUTF8(_strdup(strStd.c_str() ) ), ind); 
+		}
+	Refresh(); 
+	Update();
+ }
 void CustomDialog::OnLeftDoubleClick(wxMouseEvent &event)
 {
 	wxClientDC dc(this);
@@ -1271,7 +1307,7 @@ void CustomDialog::EditRelationShips(wxString &FirstRelationTable, wxString &Fir
 		}
 	}
 	dlg->Destroy();
-	delete Table; 
+	/*delete Table; 
 	delete TableField;
 	delete RelatedTable;
 	delete RelatedTableField;
@@ -1279,7 +1315,7 @@ void CustomDialog::EditRelationShips(wxString &FirstRelationTable, wxString &Fir
 	delete UpdateCascade;
 	delete DeleteCascade;
 	delete PrimaryKeyFirstField;
-	delete PrimaryKeySecondField;
+	delete PrimaryKeySecondField;*/
 	GetOneAdditionFields();
 	//GetRelationLines();
 	Refresh(); 
@@ -1330,7 +1366,7 @@ void CustomDialog::GetOneAdditionFields()
 		}
 	}
 }
-void CustomDialog::SaveWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy)
+void CustomDialog::SaveWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy, bool &isChecked)
 {
 	std::ofstream WindowPositionFile("WindowInformationAddTable.ini");
 	WindowPositionFile << "[WindowSize]" << std::endl;
@@ -1339,9 +1375,14 @@ void CustomDialog::SaveWindowInformationAddTable(int &sizex, int &sizey, int &po
 	WindowPositionFile << "[WindowPosition]" << std::endl;
 	WindowPositionFile << "x_coord = " << posx << std::endl;
 	WindowPositionFile << "y_coord = " << posy << std::endl;
+	WindowPositionFile << "[Other]" << posy << std::endl;
+	WindowPositionFile << "exclude = ";
+	 if( isChecked )
+		 WindowPositionFile << "true" << std::endl;
+	 else WindowPositionFile << "false" << std::endl;
 	WindowPositionFile.close();
 }
-void CustomDialog::GetWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy)
+void CustomDialog::GetWindowInformationAddTable(int &sizex, int &sizey, int &posx, int &posy, bool &isChecked)
 {
 	CSimpleIni ini;
     ini.SetUnicode();
@@ -1350,6 +1391,7 @@ void CustomDialog::GetWindowInformationAddTable(int &sizex, int &sizey, int &pos
 	sizey = ini.GetLongValue(_T("WindowSize"), _T("y"), 290);
 	posx = ini.GetLongValue(_T("WindowPosition"), _T("x_coord"), 200);
 	posy = ini.GetLongValue(_T("WindowPosition"), _T("y_coord"), 200);
+	isChecked = ini.GetBoolValue(_T("Other"), _T("exclude"), true);
 }
 
 void CustomDialog::SaveWindowInformationRemTable(int &sizex, int &sizey, int &posx, int &posy)
