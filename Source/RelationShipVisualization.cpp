@@ -95,14 +95,17 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 	}
 	m_pTables = new wxListBox(dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_pChoices);
 	
-	wxButton *addbutton = new wxButton(dlg, add_table, "Add", wxDefaultPosition, wxSize(60,25));
+	m_pAddbutton = new wxButton(dlg, add_table, "Add", wxDefaultPosition, wxSize(60,25));
 	wxButton *closebutton = new wxButton(dlg, wxID_CANCEL, "Close", wxDefaultPosition, wxSize(60,25));
 	m_pCheckbox = new wxCheckBox(dlg, add_checkbox, wxT("Exclude created tables"));
 	m_pCheckbox->SetValue(isChecked);
+	if ( !isChecked )
+		UpdateTable();
+	
 	wxBoxSizer *horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer *verticalSizer = new wxBoxSizer(wxVERTICAL);
 
-	verticalSizer->Add(addbutton, 0, wxTOP, 5);
+	verticalSizer->Add(m_pAddbutton, 0, wxTOP, 5);
 	verticalSizer->Add(closebutton, 0, wxTOP, 5);
 
 	horizontalSizer->Add(m_pTables, 1, wxEXPAND | wxALL, 5);
@@ -112,7 +115,7 @@ void CustomDialog::OnShowTables( wxCommandEvent &WXUNUSED(event))
 	sShowTables->Add(m_pCheckbox, 0, wxLEFT|wxTOP|wxBOTTOM, 5);
 	dlg->SetSizer(sShowTables);
 
-	addbutton->Connect(add_table, wxEVT_BUTTON, wxCommandEventHandler(CustomDialog::OnAddTable), NULL, this);
+	m_pAddbutton->Connect(add_table, wxEVT_BUTTON, wxCommandEventHandler(CustomDialog::OnAddTable), NULL, this);
 	m_pCheckbox->Connect(add_checkbox, wxEVT_CHECKBOX, wxCommandEventHandler(CustomDialog::OnExcludeCb), NULL, this);
 
 	if( dlg->ShowModal() == wxID_CANCEL)
@@ -779,8 +782,28 @@ void CustomDialog::OnExcludeCb(wxCommandEvent &WXUNUSED(event))
 	if( m_pCheckbox->IsChecked() )
 	{
 		UpdateAddTableData();
+		return;
 	}
+    UpdateTable();
 }
+void CustomDialog::UpdateTable()
+{
+	int nTableCount = Get.m_tablenames.size();
+	int ind = -1;
+	m_pTables->Clear();
+	m_pChoices.Clear();
+	for( int i = 0; i < nTableCount; ++i )
+		{
+		  ind++;
+		  CT2CA pszConvertedAnsiString (Get.m_tablenames[i]);
+	      std::string strStd (pszConvertedAnsiString);
+		  m_pTables->Insert(wxString::FromUTF8(_strdup(strStd.c_str() ) ), ind); 
+		  m_pChoices.Insert(wxString::FromUTF8(_strdup(strStd.c_str() ) ), ind); 
+		}
+	Refresh(); 
+	Update();
+}
+
 void CustomDialog::GetRelationLines(std::vector<std::pair<int, int>> &Drawnline, unsigned &nSize)
 {
 	wxString temp;
@@ -896,6 +919,7 @@ int CustomDialog::GetIndex(CString sSearch)
 		if( !(sSearch.Compare(Get.m_tablenames[i3])) )
 			return i3;
 	}
+	return -1;
 }
 int CustomDialog::GetIndex(wxString sSearch)
 {
@@ -905,6 +929,7 @@ int CustomDialog::GetIndex(wxString sSearch)
 		if( sSearch == CstringToWxString(Get.m_tablenames[i3]) )
 			return i3;
 	}
+	return wxNOT_FOUND;
 }
 int CustomDialog::GetCreatedTableIndex(wxString sSearch)
 {
@@ -1391,7 +1416,7 @@ void CustomDialog::GetWindowInformationAddTable(int &sizex, int &sizey, int &pos
 	sizey = ini.GetLongValue(_T("WindowSize"), _T("y"), 290);
 	posx = ini.GetLongValue(_T("WindowPosition"), _T("x_coord"), 200);
 	posy = ini.GetLongValue(_T("WindowPosition"), _T("y_coord"), 200);
-	isChecked = ini.GetBoolValue(_T("Other"), _T("exclude"), true);
+	isChecked = ini.GetBoolValue(_T("Other"), _T("exclude"), false);
 }
 
 void CustomDialog::SaveWindowInformationRemTable(int &sizex, int &sizey, int &posx, int &posy)

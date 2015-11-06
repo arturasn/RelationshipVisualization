@@ -38,6 +38,7 @@ private:
 	 void OnLeftDoubleClick(wxMouseEvent & event);
 	 void GetRelationLines(std::vector<std::pair<int, int>> &Drawnline, unsigned &nSize);
 	 void UpdateAddTableData();
+	 void UpdateTable();
 	 
 	 void MakeTableSelected();
 	 void EditRelationShips(wxString &FirstRelationTable, wxString &FirstRelationField, wxString &SecondRelationTable, wxString &SecondRelationField, const bool &bUpdateCascade,
@@ -55,6 +56,7 @@ private:
 
 private:
 	wxCheckBox *m_pCheckbox;
+	wxButton *m_pAddbutton;
 };
 
 
