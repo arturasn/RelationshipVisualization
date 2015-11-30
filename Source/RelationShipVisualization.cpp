@@ -35,8 +35,9 @@ bool MyApp::OnInit()
  
 CustomDialog::CustomDialog(const wxString &title)
        : wxFrame((wxFrame *)NULL, -1, title, wxDefaultPosition, wxSize(wxSystemSettings::GetMetric(wxSYS_SCREEN_X), wxSystemSettings::GetMetric(wxSYS_SCREEN_Y)), 
-	   wxDEFAULT_FRAME_STYLE | wxFULL_REPAINT_ON_RESIZE)
+	   wxDEFAULT_FRAME_STYLE|wxFULL_REPAINT_ON_RESIZE)
 {
+	Maximize(true);
 	Get.m_dragging = false;
 	Get.m_field_dragging = false;
 	Get.m_SomethingSelected = false;
@@ -61,7 +62,6 @@ CustomDialog::CustomDialog(const wxString &title)
 	MainToolBar->AddTool(save_tables, save_img, wxT("Save current painted canvas"));
 	
     MainToolBar->Realize();
-	
 	MainSizer->Add(MainToolBar, 0, wxEXPAND);
 	
 	SetSizer(MainSizer);
